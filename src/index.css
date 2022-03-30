@@ -1,0 +1,7 @@
+body {
+  font-family: var(--font-sans);
+}
+
+button {
+  border-radius: var(--radius-md);
+}

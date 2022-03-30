@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "composite": true,
+    //"allowSyntheticDefaultImports": true,
+    //"esModuleInterop": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "types": [
+      "wicg-file-system-access"
+    ],
+    "noEmit": true,
+    // see https://parceljs.org/languages/typescript/#isolatedmodules
+    "isolatedModules": true,
+  }
+}
