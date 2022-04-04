@@ -1,7 +1,14 @@
 import { createPerFileData } from "./file-handling";
+import { Metadata } from "./metadata";
 
 export class Backend {
+    files: Map<string, File>;
+    metadata: Map<string, Metadata>;
 
+    constructor(files: Map<string, File>, metadata: Map<string, Metadata>) {
+        this.files = files;
+        this.metadata = metadata;
+    }
 }
 
 /**
@@ -19,6 +26,8 @@ export async function createBackend(directoryHandle: FileSystemDirectoryHandle):
 
     // create a hash mapping, i.e. address files via hashes
     let hashMapping = new Map<string, File>();
+    let metadataMapping = new Map<string, Metadata>();
+
     const perFileData = await createPerFileData(allFiles);
 
     for (const [i, file] of allFiles.entries()) {
@@ -30,10 +39,11 @@ export async function createBackend(directoryHandle: FileSystemDirectoryHandle):
         } else {
             hashMapping.set(hash, file);
         }
-    }
-    console.log(hashMapping);
 
-    return new Backend();
+        metadataMapping.set(hash, perFileData[i].metadata);
+    }
+
+    return new Backend(hashMapping, metadataMapping);
 }
 
 /**

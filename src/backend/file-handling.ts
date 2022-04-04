@@ -1,5 +1,8 @@
+import { Metadata } from "./metadata";
+
 export type PerFileData = {
     hash: string
+    metadata: Metadata
 }
 
 /**
@@ -40,7 +43,10 @@ async function runMultipleWorkers<T>(partitionedPayload: any[], scriptURL: URL):
     for (let i = 0; i < numberOfWorkers; i++) {
         workers[i] = new Worker(
             scriptURL,
-            { type: "module" }
+            // Note: do not use type: "module", as it removes the variable "global"
+            // that is required by some dependencies that only run on nodejs
+            // see https://github.com/parcel-bundler/parcel/issues/6790
+            //{ type: "module" }
         );
     }
     // create a result array
