@@ -2,20 +2,21 @@ import "music-metadata-browser";
 import { IAudioMetadata, parseBlob } from "music-metadata-browser";
 
 export type Metadata = {
-    title?: string
+    title: string
+    album: string
     year?: number
-    artist?: string
-    albumArtist?: string
+    artist: string
+    albumArtist: string
     disk: {
-        no?: number
-        of?: number
+        no: number
+        of: number
     }
     track: {
-        no?: number
-        of?: number
+        no: number
+        of: number
     }
     durationSeconds?: number
-    codec?: string
+    codec: string
 }
 
 /**
@@ -35,19 +36,20 @@ export async function getMetadata(file: File): Promise<Metadata> {
  */
 function convertToMetadata(metadataRaw: IAudioMetadata): Metadata {
     return {
-        title: metadataRaw.common.title,
+        title: metadataRaw.common.title ?? "",
+        album: metadataRaw.common.album ?? "",
         year: metadataRaw.common.year,
-        artist: metadataRaw.common.artist,
-        albumArtist: metadataRaw.common.albumartist,
+        artist: metadataRaw.common.artist ?? "",
+        albumArtist: metadataRaw.common.albumartist ?? "",
         disk: {
-            no: metadataRaw.common.disk.no === null ? undefined : metadataRaw.common.disk.no,
-            of: metadataRaw.common.disk.of === null ? undefined : metadataRaw.common.disk.of
+            no: metadataRaw.common.disk.no ?? 0,
+            of: metadataRaw.common.disk.of ?? 0,
         },
         track: {
-            no: metadataRaw.common.track.no === null ? undefined : metadataRaw.common.track.no,
-            of: metadataRaw.common.track.of === null ? undefined : metadataRaw.common.track.of
+            no: metadataRaw.common.track.no ?? 0,
+            of: metadataRaw.common.track.of ?? 0,
         },
         durationSeconds: metadataRaw.format.duration,
-        codec: metadataRaw.format.codec
+        codec: metadataRaw.format.codec ?? "",
     };
 }

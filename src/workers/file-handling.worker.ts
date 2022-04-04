@@ -9,7 +9,15 @@ worker.addEventListener('message', async (message) => {
     let perFileData: PerFileData[] = [];
     for (const file of files) {
         const hash = await getFileHash(file);
-        let metadata = { disk: {}, track: {} };
+        let metadata = {
+            title: "",
+            album: "",
+            artist: "",
+            albumArtist: "",
+            codec: "",
+            disk: { of: 0, no: 0 },
+            track: { of: 0, no: 0 }
+        };
         try {
             metadata = await getMetadata(file);
         } catch (error) {

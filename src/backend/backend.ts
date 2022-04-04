@@ -1,12 +1,79 @@
 import { createPerFileData } from "./file-handling";
 import { Metadata } from "./metadata";
 
-export class Backend {
-    files: Map<string, File>;
-    metadata: Map<string, Metadata>;
+export type BackendState = None | Loading | Backend;
+export type None = "None";
+export type Loading = "Loading";
 
-    constructor(files: Map<string, File>, metadata: Map<string, Metadata>) {
-        this.files = files;
+/**
+ * A Backend stores the result of scanning a directory of audio files.
+ */
+export class Backend {
+    private assets: Map<string, Asset>;
+
+    constructor(assets: Map<string, Asset>) {
+        this.assets = assets;
+    }
+
+    /**
+     * Computes some general statistics about all assets in the backend.
+     * @returns general statistics about all assets
+     */
+    public getStatistics(): Statistics {
+        let numAssets = 0;
+        let artists = new Set<string>();
+        let albums = new Set<string>();
+        let oldest = 0;
+        let newest = 0;
+        this.assets.forEach((asset: Asset) => {
+            numAssets++;
+            artists.add(asset.metadata.artist);
+            albums.add(asset.metadata.album);
+            const metadataYear = asset.metadata.year;
+            if (metadataYear) {
+                // set the oldest year to the first available year
+                if (oldest === 0) {
+                    oldest = metadataYear;
+                }
+                // the unset value for years is 0
+                if (metadataYear < oldest && metadataYear !== 0) {
+                    oldest = metadataYear;
+                }
+                if (metadataYear > newest) {
+                    newest = metadataYear;
+                }
+            }
+        });
+        return {
+            numArtists: artists.size,
+            numAlbums: albums.size,
+            newestYear: newest,
+            oldestYear: oldest,
+            numAssets: numAssets,
+        };
+    }
+}
+
+/**
+ * General statistics about a backend.
+ */
+export type Statistics = {
+    readonly numArtists: number;
+    readonly numAlbums: number;
+    readonly numAssets: number;
+    readonly oldestYear: number;
+    readonly newestYear: number;
+}
+
+/**
+ * The Asset class stores all required data for one asset, that represents an audio file on disk.
+ */
+export class Asset {
+    readonly metadata: Metadata;
+    readonly file: File;
+
+    constructor(file: File, metadata: Metadata) {
+        this.file = file;
         this.metadata = metadata;
     }
 }
@@ -25,25 +92,25 @@ export async function createBackend(directoryHandle: FileSystemDirectoryHandle):
     ).filter(isAudioFile);
 
     // create a hash mapping, i.e. address files via hashes
-    let hashMapping = new Map<string, File>();
-    let metadataMapping = new Map<string, Metadata>();
+    let assets = new Map<string, Asset>();
 
     const perFileData = await createPerFileData(allFiles);
 
     for (const [i, file] of allFiles.entries()) {
         const hash = perFileData[i].hash;
+
         // there might be duplicate files with same hashes
-        const mappedFile = hashMapping.get(hash)
+        const mappedFile = assets.get(hash)
         if (mappedFile !== undefined) {
-            console.warn("found two files with same hash", { a: file.name, b: mappedFile.name });
-        } else {
-            hashMapping.set(hash, file);
+            console.warn("found two files with same hash", { a: file.name, b: mappedFile.file.name });
+            continue;
         }
 
-        metadataMapping.set(hash, perFileData[i].metadata);
+        const asset = new Asset(file, perFileData[i].metadata);
+        assets.set(hash, asset);
     }
 
-    return new Backend(hashMapping, metadataMapping);
+    return new Backend(assets);
 }
 
 /**

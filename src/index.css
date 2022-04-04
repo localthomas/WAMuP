@@ -4,4 +4,5 @@ body {
 
 button {
   border-radius: var(--radius-md);
+  margin: 0rem 0.5rem;
 }
