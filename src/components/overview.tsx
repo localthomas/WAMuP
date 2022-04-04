@@ -1,4 +1,4 @@
-import { Accessor, createEffect, createSignal, Show } from "solid-js";
+import { Accessor, createEffect, createSignal } from "solid-js";
 import { Backend, BackendState, Statistics } from "../backend/backend";
 
 /**
@@ -12,8 +12,8 @@ export default function Overview(props: {
     const [statistics, setStatistics] = createSignal<Statistics | undefined>(undefined);
     createEffect(() => {
         const backend = props.backend();
-        if (backend instanceof Backend) {
-            setStatistics(backend.getStatistics());
+        if (backend.tag === "Backend") {
+            setStatistics(backend.store.getStatistics());
         }
     });
 
@@ -50,12 +50,22 @@ export default function Overview(props: {
         }
     })
 
+    const [progress, setProgress] = createSignal(<></>);
+    createEffect(() => {
+        const backend = props.backend();
+        if (backend.tag === "Loading") {
+            setProgress(<progress max={backend.total} value={backend.finished}></progress>);
+        } else {
+            setProgress(<></>);
+        }
+    });
+
     return (
         <div>
             <h1>BBAP</h1>
             <h2>Statistics</h2>
-            {props.backend() === "Loading" ? <progress></progress> : <></>}
-            {table}
+            {progress()}
+            {table()}
         </div>
     );
 }

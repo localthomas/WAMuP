@@ -1,14 +1,23 @@
+import { Progress } from "../workers/shared-types";
 import { createPerFileData } from "./file-handling";
 import { Metadata } from "./metadata";
 
 export type BackendState = None | Loading | Backend;
-export type None = "None";
-export type Loading = "Loading";
+export interface Backend {
+    tag: "Backend"
+    store: BackendStore
+}
+export interface None {
+    tag: "None"
+};
+export interface Loading extends Progress {
+    tag: "Loading"
+};
 
 /**
  * A Backend stores the result of scanning a directory of audio files.
  */
-export class Backend {
+export class BackendStore {
     private assets: Map<string, Asset>;
 
     constructor(assets: Map<string, Asset>) {
@@ -85,7 +94,7 @@ export class Asset {
  * @param directoryHandle the directory where audio files reside
  * @returns the generated Backend with data
  */
-export async function createBackend(directoryHandle: FileSystemDirectoryHandle): Promise<Backend> {
+export async function createBackend(directoryHandle: FileSystemDirectoryHandle, progressCallback: (progress: Progress) => void): Promise<BackendState> {
     // only use audio files in further processing
     const allFiles = await (
         await getAllFiles(directoryHandle)
@@ -94,7 +103,7 @@ export async function createBackend(directoryHandle: FileSystemDirectoryHandle):
     // create a hash mapping, i.e. address files via hashes
     let assets = new Map<string, Asset>();
 
-    const perFileData = await createPerFileData(allFiles);
+    const perFileData = await createPerFileData(allFiles, progressCallback);
 
     for (const [i, file] of allFiles.entries()) {
         const hash = perFileData[i].hash;
@@ -110,7 +119,7 @@ export async function createBackend(directoryHandle: FileSystemDirectoryHandle):
         assets.set(hash, asset);
     }
 
-    return new Backend(assets);
+    return { tag: "Backend", store: new BackendStore(assets) };
 }
 
 /**

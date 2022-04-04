@@ -1,3 +1,4 @@
+import { isProgress, Progress } from "../workers/shared-types";
 import { Metadata } from "./metadata";
 
 export type PerFileData = {
@@ -11,13 +12,13 @@ export type PerFileData = {
  * @param files the files to analyze
  * @returns a tuple with (hashes)
  */
-export async function createPerFileData(files: File[]): Promise<PerFileData[]> {
+export async function createPerFileData(files: File[], progressCallback: (progress: Progress) => void): Promise<PerFileData[]> {
     // spawn a parallel working pool for retrieving the data
     const numberWorkerThreads = window.navigator.hardwareConcurrency;
     const partitionedFiles = partitionListBy(files, numberWorkerThreads);
 
     console.time("file-handling.worker.ts");
-    const resultsPartitioned = await runMultipleWorkers<PerFileData[]>(partitionedFiles, new URL("../workers/file-handling.worker.ts", import.meta.url));
+    const resultsPartitioned = await runMultipleWorkers<PerFileData[]>(partitionedFiles, new URL("../workers/file-handling.worker.ts", import.meta.url), progressCallback);
     console.timeEnd("file-handling.worker.ts");
 
     const results = mergePartitionedList(resultsPartitioned);
@@ -36,7 +37,7 @@ export async function createPerFileData(files: File[]): Promise<PerFileData[]> {
  * @param scriptURL the URL for loading the WebWorker script
  * @returns the results of all workers in partitioned form
  */
-async function runMultipleWorkers<T>(partitionedPayload: any[], scriptURL: URL): Promise<T[]> {
+async function runMultipleWorkers<T>(partitionedPayload: any[], scriptURL: URL, progressCallback: (progress: Progress) => void): Promise<T[]> {
     const numberOfWorkers = partitionedPayload.length;
     // create the workers
     const workers = new Array<Worker>(numberOfWorkers);
@@ -52,6 +53,27 @@ async function runMultipleWorkers<T>(partitionedPayload: any[], scriptURL: URL):
     // create a result array
     const results = new Array<T>(numberOfWorkers);
 
+    // create a progress array, i.e. how many items each worker already processed
+    const progress = new Array<Progress>(numberOfWorkers);
+    /**
+     * Handle a progress change message for a worker.
+     * @param progress the progress of the worker
+     * @param index the worker index (must be smaller than numberOfWorkers)
+     */
+    const handleProgress = function (progressUpdate: Progress, index: number) {
+        // update the progress array
+        progress[index] = progressUpdate;
+        // and produce a total progress by accumulating
+        const totalProgress = progress.reduce((previous, current): Progress => {
+            return {
+                finished: previous.finished + current.finished,
+                total: previous.total + current.total
+            };
+        });
+        // and send it to the callback
+        progressCallback(totalProgress);
+    }
+
     // create a new Promise that resolves until all workers have finished their jobs and
     // their results were set to the result array
     const promise: Promise<T[]> = new Promise((resolve) => {
@@ -59,15 +81,22 @@ async function runMultipleWorkers<T>(partitionedPayload: any[], scriptURL: URL):
         // register on all workers
         for (let i = 0; i < numberOfWorkers; i++) {
             workers[i].onmessage = (message) => {
-                // store the result in the results array
-                results[i] = message.data as T;
-                // decrement the running counter
-                workersStillWorking--;
-                // check if this "onmessage" is the last of all workers
-                if (workersStillWorking === 0) {
-                    // this is the last call to onmessage, so the promise can be resolved
-                    // all results have been written to the results array
-                    resolve(results);
+                const data = message.data as T | Progress;
+                // type switch the message data
+                if (isProgress(data)) {
+                    handleProgress(data, i);
+                } else {
+                    // a worker has finished and provided a result
+                    // store the result in the results array
+                    results[i] = data;
+                    // decrement the running counter
+                    workersStillWorking--;
+                    // check if this "onmessage" is the last of all workers
+                    if (workersStillWorking === 0) {
+                        // this is the last call to onmessage, so the promise can be resolved
+                        // all results have been written to the results array
+                        resolve(results);
+                    }
                 }
             };
         }

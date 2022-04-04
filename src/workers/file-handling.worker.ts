@@ -1,13 +1,19 @@
 import { PerFileData } from "../backend/file-handling";
 import { getFileHash } from "../backend/file-hashing";
 import { getMetadata } from "../backend/metadata";
+import { FileHandlingMessageType } from "./shared-types";
 
 const worker: Worker = self as any;
 
 worker.addEventListener('message', async (message) => {
+    // typed postMessage function
+    const postMessage = function (message: FileHandlingMessageType, options?: WindowPostMessageOptions | undefined): void {
+        worker.postMessage(message, options);
+    };
+
     const files = message.data as File[];
     let perFileData: PerFileData[] = [];
-    for (const file of files) {
+    for (const [index, file] of files.entries()) {
         const hash = await getFileHash(file);
         let metadata = {
             title: "",
@@ -28,6 +34,14 @@ worker.addEventListener('message', async (message) => {
             hash,
             metadata
         });
+
+        // do not post so many messages: only each 10th index is send
+        if (index % 10 === 0) {
+            postMessage({
+                finished: index + 1,
+                total: files.length
+            })
+        }
     }
     postMessage(perFileData);
 });

@@ -8,22 +8,24 @@ export default function SourceDirectoryPicker(props: {
     const [directoryName, setDirectoryName] = createSignal("");
 
     const openDirectory = async () => {
-        setBackendState("Loading");
         const handle = await window.showDirectoryPicker();
         setDirectoryName(handle.name);
-        const backend = await createBackend(handle);
-        setBackendState(backend);
+        const backend = await createBackend(handle, (progress) => {
+            setBackendState({
+                tag: "Loading",
+                ...progress
+            });
+        });
+        setBackendState(() => backend);
     };
 
     return (
-        <form>
-            <fieldset>
-                <legend>Choose source directory</legend>
+        <fieldset>
+            <legend>Choose source directory</legend>
 
-                <label for="selected-directory">Selected directory: </label>
-                <input id="selected-directory" type="text" readonly placeholder="No directory selected..." value={directoryName()} />
-                <button disabled={backendState() === "Loading"} onClick={openDirectory}>Open Directory</button>
-            </fieldset>
-        </form>
+            <label for="selected-directory">Selected directory: </label>
+            <input id="selected-directory" type="text" readonly placeholder="No directory selected..." value={directoryName()} />
+            <button disabled={backendState().tag === "Loading"} onClick={openDirectory}>Open Directory</button>
+        </fieldset>
     );
 }

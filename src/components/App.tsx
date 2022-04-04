@@ -4,7 +4,7 @@ import Overview from './overview';
 import SourceDirectoryPicker from './source-dir-picker';
 
 const App: Component = () => {
-  const [backend, setBackend] = createSignal<BackendState>("None");
+  const [backend, setBackend] = createSignal<BackendState>({ tag: "None" });
 
   return (
     <div>
