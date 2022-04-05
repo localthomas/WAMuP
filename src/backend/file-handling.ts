@@ -55,6 +55,13 @@ async function runMultipleWorkers<T>(partitionedPayload: any[], scriptURL: URL, 
 
     // create a progress array, i.e. how many items each worker already processed
     const progress = new Array<Progress>(numberOfWorkers);
+    // initialize with the total value and 0 finished
+    for (let i = 0; i < numberOfWorkers; i++) {
+        progress[i] = {
+            finished: 0,
+            total: partitionedPayload[i].length,
+        };
+    }
     /**
      * Handle a progress change message for a worker.
      * @param progress the progress of the worker
