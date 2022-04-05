@@ -12,6 +12,7 @@ export interface None {
 };
 export interface Loading extends Progress {
     tag: "Loading"
+    directory: string
 };
 
 /**
@@ -19,8 +20,13 @@ export interface Loading extends Progress {
  */
 export class BackendStore {
     private assets: Map<string, Asset>;
+    /**
+     * The name of the directory that was used to create this backend.
+     */
+    readonly directory: string;
 
-    constructor(assets: Map<string, Asset>) {
+    constructor(directory: string, assets: Map<string, Asset>) {
+        this.directory = directory;
         this.assets = assets;
     }
 
@@ -119,7 +125,7 @@ export async function createBackend(directoryHandle: FileSystemDirectoryHandle, 
         assets.set(hash, asset);
     }
 
-    return { tag: "Backend", store: new BackendStore(assets) };
+    return { tag: "Backend", store: new BackendStore(directoryHandle.name, assets) };
 }
 
 /**

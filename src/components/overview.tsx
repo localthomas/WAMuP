@@ -14,10 +14,13 @@ export default function Overview(props: {
         const backend = props.backend();
         if (backend.tag === "Backend") {
             setStatistics(backend.store.getStatistics());
+        } else {
+            setStatistics(undefined);
         }
     });
 
-    const [table, setTable] = createSignal(<div>Nothing loaded yet...</div>);
+    const defaultTable = <div>Nothing loaded yet...</div>;
+    const [table, setTable] = createSignal(defaultTable);
     createEffect(() => {
         const stats = statistics();
         if (stats) {
@@ -47,8 +50,10 @@ export default function Overview(props: {
                     </tbody>
                 </table>
             );
+        } else {
+            setTable(defaultTable);
         }
-    })
+    });
 
     const [progress, setProgress] = createSignal(<></>);
     createEffect(() => {
