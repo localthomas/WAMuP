@@ -16,9 +16,11 @@ function hashAsString(value: ArrayBuffer): string {
 
 /**
  * Returns a hash (currently 32-bit Murmur3) for the given file as number.
+ *
+ * Note: this changes the contents of the buffer!
  * @param file the file content to hash
  * @returns the hash of the file
  */
-export async function getFileHash(file: File): Promise<string> {
-    return hashAsString(murmur32(await file.arrayBuffer()));
+export async function getFileHash(file: Uint8Array): Promise<string> {
+    return hashAsString(murmur32(file.buffer));
 }

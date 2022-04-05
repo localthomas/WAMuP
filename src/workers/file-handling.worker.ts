@@ -7,14 +7,16 @@ const worker: Worker = self as any;
 
 worker.addEventListener('message', async (message) => {
     // typed postMessage function
-    const postMessage = function (message: FileHandlingMessageType, options?: WindowPostMessageOptions | undefined): void {
-        worker.postMessage(message, options);
+    const postMessage = function (message: FileHandlingMessageType): void {
+        worker.postMessage(message);
     };
 
     const files = message.data as File[];
     let perFileData: PerFileData[] = [];
     for (const [index, file] of files.entries()) {
-        const hash = await getFileHash(file);
+        // read the binary data of the file once, as it is needed for the metadata and hash
+        const fileBlob = new Uint8Array(await file.arrayBuffer());
+
         let metadata = {
             title: "",
             album: "",
@@ -25,23 +27,24 @@ worker.addEventListener('message', async (message) => {
             track: { of: 0, no: 0 }
         };
         try {
-            metadata = await getMetadata(file);
+            metadata = await getMetadata(fileBlob, file.type);
         } catch (error) {
             console.error(`could not read metadata from ${file.name}: `, error);
         }
+
+        // Note: get hash after metadata, as this function changes the content of the buffer!
+        const hash = await getFileHash(fileBlob);
 
         perFileData.push({
             hash,
             metadata
         });
 
-        // do not post so many messages: only each 10th index is send
-        if (index % 10 === 0) {
-            postMessage({
-                finished: index + 1,
-                total: files.length
-            })
-        }
+        // post update about which file was processed previously
+        postMessage({
+            finished: index + 1,
+            total: files.length
+        })
     }
     postMessage(perFileData);
 });

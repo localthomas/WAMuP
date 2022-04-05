@@ -1,5 +1,5 @@
 import "music-metadata-browser";
-import { IAudioMetadata, parseBlob } from "music-metadata-browser";
+import { IAudioMetadata, parseBuffer } from "music-metadata-browser";
 
 export type Metadata = {
     title: string
@@ -24,8 +24,14 @@ export type Metadata = {
  * @param file the file to analyze
  * @returns the metadata of the file
  */
-export async function getMetadata(file: File): Promise<Metadata> {
-    const metadataRaw = await parseBlob(file);
+export async function getMetadata(file: Uint8Array, mime: string): Promise<Metadata> {
+    // use the options to skip some parsing that is not required by convertToMetadata
+    const metadataRaw = await parseBuffer(file, mime, {
+        duration: true,
+        skipCovers: true,
+        skipPostHeaders: false,
+        includeChapters: false,
+    });
     return convertToMetadata(metadataRaw);
 }
 
