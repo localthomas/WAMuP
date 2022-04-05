@@ -1,5 +1,5 @@
-import { Accessor, createEffect, createSignal } from "solid-js";
-import { Backend, BackendState, Statistics } from "../backend/backend";
+import { Accessor, createEffect, createMemo, createSignal } from "solid-js";
+import { BackendState, Statistics } from "../backend/backend";
 
 /**
  * Presents some statistics about a backend in a table.
@@ -9,22 +9,19 @@ import { Backend, BackendState, Statistics } from "../backend/backend";
 export default function Overview(props: {
     backend: Accessor<BackendState>
 }) {
-    const [statistics, setStatistics] = createSignal<Statistics | undefined>(undefined);
-    createEffect(() => {
+    const statistics = createMemo(() => {
         const backend = props.backend();
         if (backend.tag === "Backend") {
-            setStatistics(backend.store.getStatistics());
+            return backend.store.getStatistics();
         } else {
-            setStatistics(undefined);
+            return undefined;
         }
     });
 
-    const defaultTable = <div>Nothing loaded yet...</div>;
-    const [table, setTable] = createSignal(defaultTable);
-    createEffect(() => {
+    const table = createMemo(() => {
         const stats = statistics();
         if (stats) {
-            setTable(
+            return (
                 <table>
                     <tbody>
                         <tr>
@@ -51,17 +48,16 @@ export default function Overview(props: {
                 </table>
             );
         } else {
-            setTable(defaultTable);
+            return <div>Nothing loaded yet...</div>;
         }
     });
 
-    const [progress, setProgress] = createSignal(<></>);
-    createEffect(() => {
+    const progress = createMemo(() => {
         const backend = props.backend();
         if (backend.tag === "Loading") {
-            setProgress(<progress max={backend.total} value={backend.finished}></progress>);
+            return <progress max={backend.total} value={backend.finished}></progress>;
         } else {
-            setProgress(<></>);
+            return <></>;
         }
     });
 

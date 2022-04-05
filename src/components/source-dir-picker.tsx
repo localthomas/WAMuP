@@ -1,4 +1,4 @@
-import { createEffect, createSignal, Signal } from "solid-js";
+import { createEffect, createMemo, createSignal, Signal } from "solid-js";
 import { BackendState, createBackend } from "../backend/backend";
 
 export default function SourceDirectoryPicker(props: {
@@ -24,18 +24,13 @@ export default function SourceDirectoryPicker(props: {
         setBackendState(() => backend);
     };
 
-    const [selectedDirectory, setSelectedDirectory] = createSignal("");
-    createEffect(() => {
+    const selectedDirectory = createMemo(() => {
         const backend = backendState();
         switch (backend.tag) {
             case "Loading":
-                setSelectedDirectory(backend.directory);
-                break;
+                return backend.directory;
             case "Backend":
-                setSelectedDirectory(backend.store.directory);
-                break;
-            default:
-                setSelectedDirectory("");
+                return backend.store.directory;
         }
     });
 
