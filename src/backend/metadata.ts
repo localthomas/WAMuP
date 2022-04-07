@@ -2,21 +2,23 @@ import "music-metadata-browser";
 import { IAudioMetadata, parseBuffer } from "music-metadata-browser";
 
 export type Metadata = {
-    title: string
-    album: string
-    year?: number
-    artist: string
-    albumArtist: string
-    disk: {
-        no: number
-        of: number
+    readonly title: string
+    readonly album: string
+    readonly year?: number
+    readonly artist: string
+    readonly albumArtist: string
+    // TODO: change to simply disk without any 'of' field
+    readonly disk: {
+        readonly no: number
+        readonly of: number
     }
-    track: {
-        no: number
-        of: number
+    // TODO: change to simply track without any 'of' field
+    readonly track: {
+        readonly no: number
+        readonly of: number
     }
-    durationSeconds?: number
-    codec: string
+    readonly durationSeconds?: number
+    readonly codec: string
 }
 
 /**

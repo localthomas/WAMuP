@@ -32,7 +32,7 @@ const App: Component = () => {
             <Route path="/albums" element={<Albums />} />
             <Route path="/albums/:id" element={<Album />} />
             <Route path="/artists" element={<Artists backend={backend.store} />} />
-            <Route path="/artists/:id" element={<Artist />} />
+            <Route path="/artists/:id" element={<Artist backend={backend.store} currentAsset="TODO" onPlayNow={(event) => console.log("TODO", event)} onAppendToPlaylist={(event) => console.log("TODO", event)} />} />
             <Route path="/" element={defaultComponent} />
             <Route path="/*all" element={<Navigate href={"/"} />} />
           </Routes>

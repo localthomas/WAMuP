@@ -12,6 +12,8 @@ export default function Default(props: {
         <>
             <SourceDirectoryPicker backendStateSignal={[backend, setBackend]} />
             <Overview backend={backend}></Overview>
+            <h2>Usage</h2>
+            <p>TODO tips and tricks for using this software</p>
         </>
     );
 }
