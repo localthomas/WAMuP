@@ -30,6 +30,12 @@ export class BackendStore {
         this.assets = assets;
     }
 
+    public forEach(func: (id: string, asset: Asset) => void): void {
+        this.assets.forEach((asset: Asset, assetID: string) => {
+            func(assetID, asset);
+        });
+    }
+
     /**
      * Computes some general statistics about all assets in the backend.
      * @returns general statistics about all assets

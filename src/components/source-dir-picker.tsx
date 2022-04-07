@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal, Signal } from "solid-js";
+import { createMemo, Signal } from "solid-js";
 import { BackendState, createBackend } from "../backend/backend";
 
 export default function SourceDirectoryPicker(props: {
