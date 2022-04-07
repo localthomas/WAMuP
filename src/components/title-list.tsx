@@ -1,6 +1,7 @@
 import { NavLink } from 'solid-app-router';
 import { JSXElement } from 'solid-js';
 import { Metadata } from '../backend/metadata';
+import { secondsToString } from '../miscellaneous/time-conversion';
 import { PlayIcon, PlusIcon } from './icon-btns';
 
 export type MetadataWithID = {
@@ -40,6 +41,10 @@ export default function TitleList(props: TitleListProps) {
         {
             value: (asset) => <NavLink href={"/albums/" + encodeURIComponent(asset.meta.album)}>{asset.meta.album}</NavLink>,
             columnName: "Album"
+        },
+        {
+            value: (asset) => secondsToString(asset.meta.durationSeconds ?? 0),
+            columnName: "Length"
         },
     ];
     //remove the items from mapping that should be ignored

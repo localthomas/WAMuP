@@ -10,8 +10,6 @@ export default function Artist(props: {
     const params = useParams();
     const artist = decodeURIComponent(params.id);
 
-    console.log("TEST", artist);
-
     const assets = processArtist(props.backend, artist);
 
     return (
