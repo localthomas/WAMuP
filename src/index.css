@@ -1,8 +1,19 @@
+:root {
+  --size-default: 0.25rem;
+}
+
 body {
   font-family: var(--font-sans);
 }
 
 button {
   border-radius: var(--radius-md);
-  margin: 0rem 0.5rem;
+  margin: var(--size-default);
+  cursor: pointer;
+}
+
+button.small {
+  background: none;
+  border: none;
+  padding: 0;
 }

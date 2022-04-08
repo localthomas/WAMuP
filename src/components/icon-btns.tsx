@@ -12,6 +12,10 @@ type IconBtnProps = {
      */
     outlined?: boolean;
     /**
+     * True if the button should be displayed with the icon only and without any button styling.
+     */
+    small?: boolean;
+    /**
      * Callback for an action taking place when the button is pressed.
      */
     onClick: () => void;
@@ -19,7 +23,7 @@ type IconBtnProps = {
 
 const IconBtn: Component<IconBtnProps> = (props) => {
     return (
-        <button className={"button is-primary is-rounded mx-1 my-1 is-svg-btn " + (props.outlined ? "is-outlined" : "")}
+        <button class={"button is-primary is-rounded mx-1 my-1 is-svg-btn " + (props.outlined ? "is-outlined " : "") + (props.small ? "small" : "")}
             disabled={props.disabled}
             onClick={() => {
                 props.onClick();
@@ -97,7 +101,7 @@ export function InfoBtn(props: IconBtnProps) {
     );
 }
 
-export function PlayIcon(props: JSX.IntrinsicElements["svg"]) {
+function PlayIcon(props: JSX.IntrinsicElements["svg"]) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" {...props}>
             <path d="M0 0h24v24H0z" fill="none" />
@@ -106,7 +110,7 @@ export function PlayIcon(props: JSX.IntrinsicElements["svg"]) {
     );
 }
 
-export function PlusIcon(props: JSX.IntrinsicElements["svg"]) {
+function PlusIcon(props: JSX.IntrinsicElements["svg"]) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" {...props}>
             <path d="M0 0h24v24H0z" fill="none" />
@@ -115,7 +119,7 @@ export function PlusIcon(props: JSX.IntrinsicElements["svg"]) {
     );
 }
 
-export function MinusIcon(props: JSX.IntrinsicElements["svg"]) {
+function MinusIcon(props: JSX.IntrinsicElements["svg"]) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" {...props}>
             <path d="M0 0h24v24H0z" fill="none" />
@@ -124,7 +128,7 @@ export function MinusIcon(props: JSX.IntrinsicElements["svg"]) {
     );
 }
 
-export function CrossIcon(props: JSX.IntrinsicElements["svg"]) {
+function CrossIcon(props: JSX.IntrinsicElements["svg"]) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" {...props}>
             <path d="M0 0h24v24H0z" fill="none" />

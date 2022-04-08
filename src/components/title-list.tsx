@@ -2,7 +2,7 @@ import { NavLink } from 'solid-app-router';
 import { JSXElement } from 'solid-js';
 import { Metadata } from '../backend/metadata';
 import { secondsToString } from '../miscellaneous/time-conversion';
-import { PlayIcon, PlusIcon } from './icon-btns';
+import { PlayBtn, PlusBtn } from './icon-btns';
 
 export type MetadataWithID = {
     readonly id: string;
@@ -70,7 +70,7 @@ export default function TitleList(props: TitleListProps) {
     list.sort(sortFn);
 
     return (
-        <table className="table is-striped is-fullwidth is-hoverable">
+        <table class="table is-striped is-fullwidth is-hoverable">
             <thead>
                 <tr>
                     {mapping.map((map) => <th>{map.columnName}</th>)}
@@ -79,17 +79,19 @@ export default function TitleList(props: TitleListProps) {
             </thead>
             <tbody>
                 {list.map(asset =>
-                    <tr className={props.currentAsset === asset.id ? "is-selected" : ""}>
+                    <tr class={props.currentAsset === asset.id ? "is-selected" : ""}>
                         {mapping.map((map) =>
                             <td>
                                 {map.value(asset)}
                             </td>)}
-                        <td className="action-column has-text-right">
-                            <PlayIcon viewBox="0 0 24 24" className="is-primary is-clickable" width="2em" height="2em"
+                        <td class="action-column has-text-right">
+                            <PlayBtn
+                                small
                                 onClick={() => {
                                     props.onPlayNow(asset.id);
                                 }} />
-                            <PlusIcon viewBox="0 0 24 24" className="is-primary is-clickable" width="2em" height="2em"
+                            <PlusBtn
+                                small
                                 onClick={() => {
                                     props.onAppendToPlaylist(asset.id);
                                 }} />

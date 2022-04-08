@@ -14,7 +14,7 @@ export default function Artist(props: {
 
     return (
         <>
-            <h1 className="title">{artist}</h1>
+            <h1 class="title">{artist}</h1>
             <TitleList titles={assets} sortFn={undefined}
                 ignoreList={new Set(["No", "Artist"])}
                 {...props} />
