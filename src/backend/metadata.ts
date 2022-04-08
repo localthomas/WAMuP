@@ -1,5 +1,5 @@
 import "music-metadata-browser";
-import { IAudioMetadata, parseBuffer } from "music-metadata-browser";
+import { IAudioMetadata, parseBuffer, selectCover } from "music-metadata-browser";
 
 export type Metadata = {
     readonly title: string
@@ -7,12 +7,12 @@ export type Metadata = {
     readonly year?: number
     readonly artist: string
     readonly albumArtist: string
-    // TODO: change to simply disk without any 'of' field
-    readonly disk: {
+    readonly composer: string
+    readonly genre: string
+    readonly disc: {
         readonly no: number
         readonly of: number
     }
-    // TODO: change to simply track without any 'of' field
     readonly track: {
         readonly no: number
         readonly of: number
@@ -37,6 +37,25 @@ export async function getMetadata(file: Uint8Array, mime: string): Promise<Metad
     return convertToMetadata(metadataRaw);
 }
 
+export async function getThumbnail(file: Uint8Array, mime: string): Promise<Blob | undefined> {
+    // use the options to skip some parsing that is not required by convertToMetadata
+    const metadataRaw = await parseBuffer(file, mime, {
+        duration: false,
+        skipCovers: false,
+        skipPostHeaders: true,
+        includeChapters: false,
+    });
+    const picture = selectCover(metadataRaw.common.picture);
+    if (picture) {
+        // convert IPicture into a Blob
+        return new Blob([picture.data], {
+            type: picture.format
+        });
+    } else {
+        return undefined;
+    }
+}
+
 /**
  * Converts the metadata from library specific format into an library agnostic format.
  * @param metadataRaw the metadata in the format of the music-metadata-browser lib
@@ -49,7 +68,9 @@ function convertToMetadata(metadataRaw: IAudioMetadata): Metadata {
         year: metadataRaw.common.year,
         artist: metadataRaw.common.artist ?? "",
         albumArtist: metadataRaw.common.albumartist ?? "",
-        disk: {
+        composer: metadataRaw.common.composer?.join(", ") ?? "",
+        genre: metadataRaw.common.genre?.join(", ") ?? "",
+        disc: {
             no: metadataRaw.common.disk.no ?? 0,
             of: metadataRaw.common.disk.of ?? 0,
         },

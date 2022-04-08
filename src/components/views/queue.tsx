@@ -1,6 +1,7 @@
 import { NavLink } from "solid-app-router";
 import { BackendStore } from "../../backend/backend";
 import { QueueState } from "../../player/queue";
+import { AssetDetailed } from "../asset-detailed";
 import { CrossBtn } from "../icon-btns";
 
 export default function Queue(props: {
@@ -12,9 +13,9 @@ export default function Queue(props: {
     //if the queue is empty show a hint
     if (props.queue.playlist.length <= 0) {
         return (
-            <div className="container">
-                <div className="columns is-centered">
-                    <h1 className="title">
+            <div class="container">
+                <div class="columns is-centered">
+                    <h1 class="title">
                         Queue is empty!
                     </h1>
                 </div>
@@ -25,6 +26,15 @@ export default function Queue(props: {
     const id: string = props.queue.playlist[0];
     return (
         <>
+            <AssetDetailed backend={props.backend} assetID={id}>
+                <button class="button is-primary is-outlined is-rounded"
+                    disabled={props.queue.playlist.length <= 1}
+                    onClick={() => {
+                        props.onReplacePlaylist([props.queue.playlist[0]])
+                    }} >
+                    Clear Queue
+                </button>
+            </AssetDetailed>
             <table class="table is-striped is-fullwidth is-hoverable">
                 <thead>
                     <tr>

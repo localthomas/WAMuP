@@ -23,7 +23,9 @@ worker.addEventListener('message', async (message) => {
             artist: "",
             albumArtist: "",
             codec: "",
-            disk: { of: 0, no: 0 },
+            composer: "",
+            genre: "",
+            disc: { of: 0, no: 0 },
             track: { of: 0, no: 0 }
         };
         try {

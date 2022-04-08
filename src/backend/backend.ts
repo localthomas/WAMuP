@@ -96,7 +96,7 @@ export type Statistics = {
 }
 
 /**
- * The Asset class stores all required data for one asset, that represents an audio file on disk.
+ * The Asset class stores all required data for one asset, that represents an audio file on disc.
  */
 export class Asset {
     readonly metadata: Metadata;
