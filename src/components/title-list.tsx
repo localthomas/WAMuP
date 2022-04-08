@@ -14,7 +14,7 @@ export type TitleListProps = {
     sortFn?: (a: MetadataWithID, b: MetadataWithID) => number;
     // ignoreList is a list filled with column headings that will be hidden in the output
     ignoreList?: Set<string>;
-    currentAsset: string;
+    currentAsset: string | undefined;
 } & TitleListEvents
 
 export type TitleListEvents = {

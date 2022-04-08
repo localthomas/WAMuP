@@ -10,9 +10,34 @@ import Artist from './views/artist';
 import Asset from './views/asset';
 import Queue from './views/queue';
 import Visualizer from './views/visualizer';
+import { appendToQueue, getCurrentAssetOfQueue, pushFrontToQueue, QueueState, removeFromQueue, setQueue } from '../player/queue';
 
 const App: Component = () => {
   const [backendState, setBackendState] = createSignal<BackendState>({ tag: "None" });
+  const [queueState, setQueueState] = createSignal<QueueState>({ playlist: [] });
+  const appendToPlaylist = (assetID: string) => {
+    setQueueState((queue) => appendToQueue(queue, assetID));
+  };
+  const playNow = (assetID: string) => {
+    setQueueState((queue) => pushFrontToQueue(queue, assetID));
+  };
+  const setNewPlaylist = (assets: string[]) => {
+    setQueueState((queue) => setQueue(queue, assets));
+  };
+  const removeFromPlaylist = (index: number) => {
+    setQueueState((queue) => {
+      //if the queue only contains one element, keep it
+      if (queue.playlist.length > 1) {
+        return removeFromQueue(queue, index)
+      } else {
+        return queue;
+      }
+    });
+  };
+
+  createEffect(() => {
+    console.log("TEST", queueState());
+  })
 
   const defaultComponent = <Default backendSignal={[backendState, setBackendState]} />;
 
@@ -32,7 +57,14 @@ const App: Component = () => {
             <Route path="/albums" element={<Albums />} />
             <Route path="/albums/:id" element={<Album />} />
             <Route path="/artists" element={<Artists backend={backend.store} />} />
-            <Route path="/artists/:id" element={<Artist backend={backend.store} currentAsset="TODO" onPlayNow={(event) => console.log("TODO", event)} onAppendToPlaylist={(event) => console.log("TODO", event)} />} />
+            <Route path="/artists/:id" element={
+              <Artist
+                backend={backend.store}
+                currentAsset={getCurrentAssetOfQueue(queueState())}
+                onPlayNow={playNow}
+                onAppendToPlaylist={appendToPlaylist}
+              />}
+            />
             <Route path="/" element={defaultComponent} />
             <Route path="/*all" element={<Navigate href={"/"} />} />
           </Routes>

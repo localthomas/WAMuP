@@ -5,7 +5,7 @@ import TitleList, { TitleListEvents } from "../title-list";
 
 export default function Artist(props: {
     backend: BackendStore;
-    currentAsset: string;
+    currentAsset: string | undefined;
 } & TitleListEvents) {
     const params = useParams();
     const artist = decodeURIComponent(params.id);
