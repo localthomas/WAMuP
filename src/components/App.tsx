@@ -51,12 +51,31 @@ const App: Component = () => {
         <>
           <Navigation />
           <Routes>
-            <Route path="/assets/:id" element={<Asset />} />
-            <Route path="/queue" element={<Queue />} />
-            <Route path="/visualizer" element={<Visualizer />} />
-            <Route path="/albums" element={<Albums />} />
-            <Route path="/albums/:id" element={<Album />} />
-            <Route path="/artists" element={<Artists backend={backend.store} />} />
+            <Route path="/assets/:id" element={
+              <Asset />}
+            />
+            <Route path="/queue" element={
+              <Queue
+                backend={backend.store}
+                queue={queueState()}
+                onRemoveFromPlaylist={removeFromPlaylist}
+                onReplacePlaylist={setNewPlaylist}
+              />}
+            />
+            <Route path="/visualizer" element={
+              <Visualizer />}
+            />
+            <Route path="/albums" element={
+              <Albums />}
+            />
+            <Route path="/albums/:id" element={
+              <Album />}
+            />
+            <Route path="/artists" element={
+              <Artists
+                backend={backend.store}
+              />}
+            />
             <Route path="/artists/:id" element={
               <Artist
                 backend={backend.store}
@@ -65,8 +84,14 @@ const App: Component = () => {
                 onAppendToPlaylist={appendToPlaylist}
               />}
             />
-            <Route path="/" element={defaultComponent} />
-            <Route path="/*all" element={<Navigate href={"/"} />} />
+            <Route path="/" element={
+              defaultComponent}
+            />
+            <Route path="/*all" element={
+              <Navigate
+                href={"/"}
+              />}
+            />
           </Routes>
         </>
       );

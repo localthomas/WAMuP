@@ -37,6 +37,15 @@ export class BackendStore {
     }
 
     /**
+     * Searches for a given asset in the store and returns it, if found
+     * @param assetID the asset's ID
+     * @returns the asset
+     */
+    get(assetID: string): Asset | undefined {
+        return this.assets.get(assetID);
+    }
+
+    /**
      * Computes some general statistics about all assets in the backend.
      * @returns general statistics about all assets
      */

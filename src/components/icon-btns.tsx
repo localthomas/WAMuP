@@ -101,6 +101,14 @@ export function InfoBtn(props: IconBtnProps) {
     );
 }
 
+export function CrossBtn(props: IconBtnProps) {
+    return (
+        <IconBtn {...props}>
+            <CrossIcon viewBox="0 0 24 24" fill="black" width="2em" height="2em" />
+        </IconBtn>
+    );
+}
+
 function PlayIcon(props: JSX.IntrinsicElements["svg"]) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" {...props}>
