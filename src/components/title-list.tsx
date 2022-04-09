@@ -1,16 +1,11 @@
 import { NavLink } from 'solid-app-router';
 import { JSXElement } from 'solid-js';
-import { Metadata } from '../backend/metadata';
+import { MetadataWithID } from '../backend/metadata';
 import { secondsToString } from '../miscellaneous/time-conversion';
 import { PlayBtn, PlusBtn } from './icon-btns';
 
-export type MetadataWithID = {
-    readonly id: string;
-    readonly meta: Metadata;
-}
-
 export type TitleListProps = {
-    titles: Map<string, Metadata>;
+    titles: MetadataWithID[];
     sortFn?: (a: MetadataWithID, b: MetadataWithID) => number;
     // ignoreList is a list filled with column headings that will be hidden in the output
     ignoreList?: Set<string>;
@@ -29,7 +24,7 @@ export default function TitleList(props: TitleListProps) {
         columnName: string;
     }
     let mapping: Mapping[] = [
-        { value: meta => meta.meta.track.no === 0 ? "" : "" + meta.meta.track, columnName: "No" },
+        { value: meta => meta.meta.track.no === 0 ? "" : "" + meta.meta.track.no, columnName: "No" },
         {
             value: (asset) => <NavLink href={"/assets/" + encodeURIComponent(asset.id)}>{asset.meta.title}</NavLink>,
             columnName: "Title"
@@ -54,13 +49,7 @@ export default function TitleList(props: TitleListProps) {
         })
     }
 
-    let list: MetadataWithID[] = [];
-    for (const [id, meta] of props.titles) {
-        list.push({
-            id,
-            meta
-        });
-    }
+    const list = props.titles;
     let sortFn = props.sortFn;
     if (!sortFn) {
         //default: sort by name

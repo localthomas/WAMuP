@@ -1,4 +1,4 @@
-import { Component, createEffect, createMemo, createSignal } from 'solid-js';
+import { Component, createMemo, createSignal } from 'solid-js';
 import { Navigate, Routes, Route } from "solid-app-router";
 import { BackendState } from '../backend/backend';
 import Default from './views/default';
@@ -35,10 +35,6 @@ const App: Component = () => {
     });
   };
 
-  createEffect(() => {
-    console.log("TEST", queueState());
-  })
-
   const defaultComponent = <Default backendSignal={[backendState, setBackendState]} />;
 
   // Switch the current page from a simple default view to a proper view with navigation,
@@ -69,7 +65,13 @@ const App: Component = () => {
               <Albums />}
             />
             <Route path="/albums/:id" element={
-              <Album />}
+              <Album
+                backend={backend.store}
+                onReplacePlaylist={setNewPlaylist}
+                currentAsset={queueState().playlist.at(0)}
+                onPlayNow={playNow}
+                onAppendToPlaylist={appendToPlaylist}
+              />}
             />
             <Route path="/artists" element={
               <Artists

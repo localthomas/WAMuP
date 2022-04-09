@@ -1,6 +1,6 @@
 import { Progress } from "../workers/shared-types";
 import { createPerFileData } from "./file-handling";
-import { Metadata } from "./metadata";
+import { Metadata, MetadataWithID } from "./metadata";
 
 export type BackendState = None | Loading | Backend;
 export interface Backend {
@@ -30,10 +30,44 @@ export class BackendStore {
         this.assets = assets;
     }
 
+    /**
+     * Iterates over all assets stored in this backend and calls the iteration function on each.
+     * @param func the iteration function
+     */
     public forEach(func: (id: string, asset: Asset) => void): void {
         this.assets.forEach((asset: Asset, assetID: string) => {
             func(assetID, asset);
         });
+    }
+
+    /**
+     * Creates a list with merged assets and their IDs. The result is not sorted.
+     * @returns the list of assets
+     */
+    public asAssetList(): AssetWithID[] {
+        let list: AssetWithID[] = [];
+        this.assets.forEach((asset: Asset, id: string) => {
+            list.push({
+                id,
+                asset
+            });
+        });
+        return list;
+    }
+
+    /**
+     * Creates a list with merged metadata and their asset IDs. The result is not sorted.
+     * @returns the list of assets
+     */
+    public asMetadataList(): MetadataWithID[] {
+        let list: MetadataWithID[] = [];
+        this.assets.forEach((asset: Asset, id: string) => {
+            list.push({
+                id,
+                meta: asset.metadata
+            });
+        });
+        return list;
     }
 
     /**
@@ -93,6 +127,14 @@ export type Statistics = {
     readonly numAssets: number;
     readonly oldestYear: number;
     readonly newestYear: number;
+}
+
+/**
+ * Combines an asset with its unique ID.
+ */
+export type AssetWithID = {
+    readonly id: string;
+    readonly asset: Asset;
 }
 
 /**

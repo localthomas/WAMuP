@@ -1,6 +1,11 @@
 import "music-metadata-browser";
 import { IAudioMetadata, parseBuffer, selectCover } from "music-metadata-browser";
 
+export type MetadataWithID = {
+    readonly id: string;
+    readonly meta: Metadata;
+}
+
 export type Metadata = {
     readonly title: string
     readonly album: string
@@ -35,6 +40,27 @@ export async function getMetadata(file: Uint8Array, mime: string, fileName: stri
         includeChapters: false,
     });
     return convertToMetadata(metadataRaw, fileName);
+}
+
+/**
+ * A sorting function for sorting a list of `MetadataWithID` by album, disc, track, and then title.
+ * @param a asset a
+ * @param b asset b
+ * @returns the difference between the two assets (0, -1, or 1)
+ */
+export function sortTracksFunction(a: MetadataWithID, b: MetadataWithID): number {
+    if (a.meta.album !== b.meta.album) {
+        return a.meta.album > b.meta.album ? 1 : 0;
+    }
+    const diffDisc = a.meta.disc.no - b.meta.disc.no;
+    if (diffDisc !== 0) {
+        return diffDisc;
+    }
+    const diffTrack = a.meta.track.no - b.meta.track.no;
+    if (diffTrack !== 0) {
+        return diffTrack;
+    }
+    return a.meta.title > b.meta.title ? 1 : 0;
 }
 
 export async function getThumbnail(file: Uint8Array, mime: string): Promise<Blob | undefined> {
