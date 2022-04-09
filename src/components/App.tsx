@@ -48,7 +48,11 @@ const App: Component = () => {
           <Navigation />
           <Routes>
             <Route path="/assets/:id" element={
-              <Asset />}
+              <Asset
+                backend={backend.store}
+                onPlayNow={playNow}
+                onAppendToPlaylist={appendToPlaylist}
+              />}
             />
             <Route path="/queue" element={
               <Queue
