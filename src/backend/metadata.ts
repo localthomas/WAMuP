@@ -26,7 +26,7 @@ export type Metadata = {
  * @param file the file to analyze
  * @returns the metadata of the file
  */
-export async function getMetadata(file: Uint8Array, mime: string): Promise<Metadata> {
+export async function getMetadata(file: Uint8Array, mime: string, fileName: string): Promise<Metadata> {
     // use the options to skip some parsing that is not required by convertToMetadata
     const metadataRaw = await parseBuffer(file, mime, {
         duration: true,
@@ -34,7 +34,7 @@ export async function getMetadata(file: Uint8Array, mime: string): Promise<Metad
         skipPostHeaders: false,
         includeChapters: false,
     });
-    return convertToMetadata(metadataRaw);
+    return convertToMetadata(metadataRaw, fileName);
 }
 
 export async function getThumbnail(file: Uint8Array, mime: string): Promise<Blob | undefined> {
@@ -58,12 +58,13 @@ export async function getThumbnail(file: Uint8Array, mime: string): Promise<Blob
 
 /**
  * Converts the metadata from library specific format into an library agnostic format.
+ * If the title is not set, the file name is used as a fallback.
  * @param metadataRaw the metadata in the format of the music-metadata-browser lib
  * @returns the converted unified metadata
  */
-function convertToMetadata(metadataRaw: IAudioMetadata): Metadata {
+function convertToMetadata(metadataRaw: IAudioMetadata, fileName: string): Metadata {
     return {
-        title: metadataRaw.common.title ?? "",
+        title: metadataRaw.common.title ?? fileName,
         album: metadataRaw.common.album ?? "",
         year: metadataRaw.common.year,
         artist: metadataRaw.common.artist ?? "",

@@ -62,11 +62,10 @@ export default function Overview(props: {
     });
 
     return (
-        <div>
-            <h1>BBAP</h1>
+        <>
             <h2>Statistics</h2>
             {progress()}
             {table()}
-        </div>
+        </>
     );
 }

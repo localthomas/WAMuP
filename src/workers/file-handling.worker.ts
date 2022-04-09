@@ -29,7 +29,7 @@ worker.addEventListener('message', async (message) => {
             track: { of: 0, no: 0 }
         };
         try {
-            metadata = await getMetadata(fileBlob, file.type);
+            metadata = await getMetadata(fileBlob, file.type, file.name);
         } catch (error) {
             console.error(`could not read metadata from ${file.name}: `, error);
         }
