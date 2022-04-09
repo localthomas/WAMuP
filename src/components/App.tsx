@@ -1,15 +1,15 @@
 import { Component, createMemo, createSignal } from 'solid-js';
 import { Navigate, Routes, Route } from "solid-app-router";
 import { BackendState } from '../backend/backend';
-import Default from './views/default';
+import Default from '../views/default';
 import Navigation from './navigation';
-import Albums from './views/albums';
-import Album from './views/album';
-import Artists from './views/artists';
-import Artist from './views/artist';
-import Asset from './views/asset';
-import Queue from './views/queue';
-import Visualizer from './views/visualizer';
+import Albums from '../views/albums';
+import Album from '../views/album';
+import Artists from '../views/artists';
+import Artist from '../views/artist';
+import Asset from '../views/asset';
+import Queue from '../views/queue';
+import Visualizer from '../views/visualizer';
 import { appendToQueue, getCurrentAssetOfQueue, pushFrontToQueue, QueueState, removeFromQueue, setQueue } from '../player/queue';
 
 const App: Component = () => {

@@ -2,7 +2,7 @@ import { createResource } from "solid-js";
 import { Asset } from "../backend/backend";
 import { blobToImageWithDefault } from "../miscellaneous/images";
 import { InfoBtn, PlayBtn } from "./icon-btns";
-import { getFirstThumbnail } from "./views/album";
+import { getFirstThumbnail } from "../views/album";
 
 export default function AlbumCard(props: {
     album: string;

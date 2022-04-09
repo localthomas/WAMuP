@@ -1,6 +1,6 @@
 import { useNavigate } from "solid-app-router";
-import { Asset, BackendStore } from "../../backend/backend";
-import AlbumCard from "../album-card";
+import { Asset, BackendStore } from "../backend/backend";
+import AlbumCard from "../components/album-card";
 import { getAlbumList } from "./album";
 
 export default function AlbumsCards(props: {

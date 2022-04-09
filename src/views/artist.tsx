@@ -1,7 +1,7 @@
 import { useParams } from "solid-app-router";
-import { BackendStore } from "../../backend/backend";
-import { MetadataWithID } from "../../backend/metadata";
-import TitleList, { TitleListEvents } from "../title-list";
+import { BackendStore } from "../backend/backend";
+import { MetadataWithID } from "../backend/metadata";
+import TitleList, { TitleListEvents } from "../components/title-list";
 
 export default function Artist(props: {
     backend: BackendStore;

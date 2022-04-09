@@ -1,7 +1,7 @@
 import { useParams } from "solid-app-router";
-import { BackendStore } from "../../backend/backend";
-import { AssetDetailed } from "../asset-detailed";
-import { PlayBtn, PlusBtn } from "../icon-btns";
+import { BackendStore } from "../backend/backend";
+import { AssetDetailed } from "../components/asset-detailed";
+import { PlayBtn, PlusBtn } from "../components/icon-btns";
 
 export default function Asset(props: {
     backend: BackendStore;

@@ -1,9 +1,9 @@
 import { useParams } from "solid-app-router";
 import { createResource } from "solid-js";
-import { Asset, BackendStore } from "../../backend/backend";
-import { getThumbnail, MetadataWithID, sortTracksFunction } from "../../backend/metadata";
-import { blobToImageWithDefault } from "../../miscellaneous/images";
-import TitleList, { TitleListEvents } from "../title-list";
+import { Asset, BackendStore } from "../backend/backend";
+import { getThumbnail, MetadataWithID, sortTracksFunction } from "../backend/metadata";
+import { blobToImageWithDefault } from "../miscellaneous/images";
+import TitleList, { TitleListEvents } from "../components/title-list";
 
 export default function Album(props: {
     backend: BackendStore;

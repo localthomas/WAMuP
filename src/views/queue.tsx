@@ -1,8 +1,8 @@
 import { NavLink } from "solid-app-router";
-import { BackendStore } from "../../backend/backend";
-import { QueueState } from "../../player/queue";
-import { AssetDetailed } from "../asset-detailed";
-import { CrossBtn } from "../icon-btns";
+import { BackendStore } from "../backend/backend";
+import { QueueState } from "../player/queue";
+import { AssetDetailed } from "../components/asset-detailed";
+import { CrossBtn } from "../components/icon-btns";
 
 export default function Queue(props: {
     backend: BackendStore;

@@ -1,7 +1,7 @@
 import { Signal } from "solid-js";
-import { BackendState } from "../../backend/backend";
-import Overview from "../overview";
-import SourceDirectoryPicker from "../source-dir-picker";
+import { BackendState } from "../backend/backend";
+import Overview from "../components/overview";
+import SourceDirectoryPicker from "../components/source-dir-picker";
 
 export default function Default(props: {
     backendSignal: Signal<BackendState>

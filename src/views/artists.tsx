@@ -1,6 +1,6 @@
 import { NavLink } from "solid-app-router";
 import { createMemo, For } from "solid-js";
-import { Asset, BackendStore } from "../../backend/backend";
+import { Asset, BackendStore } from "../backend/backend";
 
 export default function Artists(props: {
     backend: BackendStore
