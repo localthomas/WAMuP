@@ -20,17 +20,17 @@ export const AssetDetailed: Component<AssetDetailedProps> = (props) => {
     });
 
     return (
-        <div className="container">
-            <div className="columns">
-                <div className="column is-half">
-                    <figure className="image">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-half">
+                    <figure class="image">
                         {blobToImageWithDefault(thumbnail())}
                     </figure>
                 </div>
-                <div className="column is-half is-centered has-text-centered">
-                    <p className="title is-4">{metadata.title}</p>
-                    <p className="subtitle is-6">{metadata.artist}</p>
-                    <table className="table has-text-justified is-centered mb-3">
+                <div class="column is-half is-centered has-text-centered">
+                    <p class="title is-4">{metadata.title}</p>
+                    <p class="subtitle is-6">{metadata.artist}</p>
+                    <table class="table has-text-justified is-centered mb-3">
                         <tbody>
                             <tr>
                                 <td>Album:</td>

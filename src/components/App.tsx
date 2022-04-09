@@ -66,7 +66,10 @@ const App: Component = () => {
               <Visualizer />}
             />
             <Route path="/albums" element={
-              <Albums />}
+              <Albums
+                backend={backend.store}
+                onReplacePlaylist={setNewPlaylist}
+              />}
             />
             <Route path="/albums/:id" element={
               <Album

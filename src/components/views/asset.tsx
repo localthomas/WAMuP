@@ -11,7 +11,7 @@ export default function Asset(props: {
     const params: any = useParams();
     const id: string = decodeURIComponent(params.id);
     return (
-        <div className="container">
+        <div class="container">
             <AssetDetailed backend={props.backend} assetID={id}>
                 <PlayBtn outlined
                     onClick={() => {

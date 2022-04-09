@@ -42,34 +42,26 @@ export default function Album(props: {
     });
 
     const [thumbnail] = createResource(async () => {
-        let thumbnail: Blob | undefined = undefined;
-        // get the first thumbnail of all assets in the list
-        for (const asset of assets) {
-            const data = new Uint8Array(await asset.asset.file.arrayBuffer());
-            thumbnail = await getThumbnail(data, asset.asset.file.type);
-            // skip any more thumbnails with breaking the loop
-            if (thumbnail) break;
-        }
-        return thumbnail;
+        return await getFirstThumbnail(assets.map(asset => asset.asset));
     });
 
     return (
-        <div className="container">
-            <div className="columns">
-                <div className="column is-half">
-                    <figure className="image">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-half">
+                    <figure class="image">
                         {blobToImageWithDefault(thumbnail())}
                     </figure>
                 </div>
-                <div className="column is-half">
-                    <h1 className="title">{album}</h1>
-                    <h2 className="subtitle">
+                <div class="column is-half">
+                    <h1 class="title">{album}</h1>
+                    <h2 class="subtitle">
                         {albumsArtistsList.join("; ")}
                     </h2>
                     {
                         // only display the year, if both year values are valid
                         newestYear !== 0 && oldestYear !== Number.MAX_VALUE ?
-                            <h6 className="subtitle is-6">
+                            <h6 class="subtitle is-6">
                                 {
                                     newestYear === 0 ? " " :
                                         oldestYear === newestYear ?
@@ -81,7 +73,7 @@ export default function Album(props: {
                             :
                             <></>
                     }
-                    <button className="button is-primary is-rounded is-outlined"
+                    <button class="button is-primary is-rounded is-outlined"
                         onClick={() => {
                             props.onReplacePlaylist(getAlbumList(props.backend, album));
                         }}>
@@ -104,6 +96,29 @@ export default function Album(props: {
     );
 }
 
+/**
+ * Search for a thumbnail in the given list of assets and return the first one.
+ * @param list the list to scan through
+ * @returns either the binary data of a thumbnail or nothing
+ */
+export async function getFirstThumbnail(list: Asset[]): Promise<Blob | undefined> {
+    let thumbnail: Blob | undefined = undefined;
+    // get the first thumbnail of all assets in the list
+    for (const asset of list) {
+        const data = new Uint8Array(await asset.file.arrayBuffer());
+        thumbnail = await getThumbnail(data, asset.file.type);
+        // skip any more thumbnails with breaking the loop
+        if (thumbnail) break;
+    }
+    return thumbnail;
+}
+
+/**
+ * Generates a list of all asset IDs that are in an album.
+ * @param data the backend
+ * @param albumName the album name
+ * @returns a list with all asset IDs that are in the album
+ */
 export function getAlbumList(data: BackendStore, albumName: string): string[] {
     //get a list with all titles and the correct order of the album
     let tmpList: MetadataWithID[] = [];
