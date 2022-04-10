@@ -11,11 +11,14 @@ import Asset from '../views/asset';
 import Queue from '../views/queue';
 import Visualizer from '../views/visualizer';
 import { appendToQueue, getCurrentAssetOfQueue, pushFrontToQueue, QueueState, removeFromQueue, setQueue } from '../player/queue';
+import PlayerBar from './player-bar';
+import AudioPlayer from '../player/audio-player';
 
 const App: Component = () => {
   const [backendState, setBackendState] = createSignal<BackendState>({ tag: "None" });
   const [queueState, setQueueState] = createSignal<QueueState>({ playlist: [] });
   const appendToPlaylist = (assetID: string) => {
+    console.log("APPEND TO PLAYLIST called", assetID);
     setQueueState((queue) => appendToQueue(queue, assetID));
   };
   const playNow = (assetID: string) => {
@@ -42,6 +45,7 @@ const App: Component = () => {
   const page = createMemo(() => {
     const backend = backendState();
     if (backend.tag === "Backend") {
+      const player = new AudioPlayer(backend.store);
       // page setup, if a fully loaded backend is available
       return (
         <>
@@ -102,6 +106,7 @@ const App: Component = () => {
               />}
             />
           </Routes>
+          <PlayerBar player={player} queue={queueState} backend={backend.store} onRemoveFromPlaylist={removeFromPlaylist} />
         </>
       );
     } else {

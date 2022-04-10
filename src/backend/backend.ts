@@ -1,6 +1,6 @@
 import { Progress } from "../workers/shared-types";
 import { createPerFileData } from "./file-handling";
-import { Metadata, MetadataWithID } from "./metadata";
+import { getThumbnail, Metadata, MetadataWithID } from "./metadata";
 
 export type BackendState = None | Loading | Backend;
 export interface Backend {
@@ -75,8 +75,33 @@ export class BackendStore {
      * @param assetID the asset's ID
      * @returns the asset
      */
-    get(assetID: string): Asset | undefined {
+    public get(assetID: string): Asset | undefined {
         return this.assets.get(assetID);
+    }
+
+    /**
+     * Similar to `get`, but either throws an exception if the asset does not exist or returns the asset on success.
+     * @param assetID the asset's ID
+     * @returns the asset
+     */
+    public mustGet(assetID: string): Asset {
+        const asset = this.get(assetID);
+        if (!asset) {
+            throw "unknown asset ID: " + assetID;
+        }
+        return asset;
+    }
+
+    /**
+     * Get the thumbnail/picture of an asset.
+     * If the asset does not exist, an exception is thrown, otherwise the picture (if available) is returned.
+     * @param assetID the asset's ID
+     * @returns either a Blob with the image data or undefined, if the asset has no thumbnail
+     */
+    public async getThumbnail(assetID: string): Promise<Blob | undefined> {
+        const asset = this.mustGet(assetID);
+        const data = new Uint8Array(await asset.file.arrayBuffer());
+        return getThumbnail(data, asset.file.type);
     }
 
     /**
