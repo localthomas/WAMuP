@@ -1,17 +1,16 @@
 import { NavLink } from "solid-app-router";
 import { BackendStore } from "../backend/backend";
-import { QueueState } from "../player/queue";
 import { AssetDetailed } from "../components/asset-detailed";
 import { CrossBtn } from "../components/icon-btns";
 
 export default function Queue(props: {
     backend: BackendStore;
-    queue: QueueState;
+    playlist: string[];
     onRemoveFromPlaylist: (index: number) => void;
     onReplacePlaylist: (newList: string[]) => void;
 }) {
     //if the queue is empty show a hint
-    if (props.queue.playlist.length <= 0) {
+    if (props.playlist.length <= 0) {
         return (
             <div class="container">
                 <div class="columns is-centered">
@@ -23,14 +22,14 @@ export default function Queue(props: {
         );
     }
 
-    const id: string = props.queue.playlist[0];
+    const id: string = props.playlist[0];
     return (
         <>
             <AssetDetailed backend={props.backend} assetID={id}>
                 <button class="button is-primary is-outlined is-rounded"
-                    disabled={props.queue.playlist.length <= 1}
+                    disabled={props.playlist.length <= 1}
                     onClick={() => {
-                        props.onReplacePlaylist([props.queue.playlist[0]])
+                        props.onReplacePlaylist([props.playlist[0]])
                     }} >
                     Clear Queue
                 </button>
@@ -45,7 +44,7 @@ export default function Queue(props: {
                     </tr>
                 </thead>
                 <tbody>
-                    {props.queue.playlist.slice(1).map((assetID, index) => {
+                    {props.playlist.slice(1).map((assetID, index) => {
                         const assetData = props.backend.get(assetID);
                         if (!assetData) {
                             throw "unreachable";

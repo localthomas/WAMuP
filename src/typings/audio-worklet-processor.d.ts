@@ -19,6 +19,7 @@ declare function registerProcessor(
     processorCtor: (new (
         options?: AudioWorkletNodeOptions
     ) => AudioWorkletProcessor) & {
-        parameterDescriptors?: AudioParamDescriptor[];
+        // Note: deprecated
+        //parameterDescriptors?: AudioParamDescriptor[];
     }
 ): void;

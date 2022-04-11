@@ -1,20 +1,22 @@
-import { Accessor, createMemo } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import { Metadata } from "../backend/metadata";
-import AudioPlayer from "../player/audio-player";
-import { QueueState } from "../player/queue";
+import { AudioSession } from "../player/audio-session";
 import { AudioControls } from "./audio-controls";
 import { CrossBtn } from "./icon-btns";
 
 export default function PlayerBar(props: {
     backend: BackendStore;
-    queue: Accessor<QueueState>;
-    player: AudioPlayer;
-    onRemoveFromPlaylist: (index: number) => void;
+    audioSession: AudioSession;
 }) {
+    const [queue, setQueue] = createSignal<string[]>([]);
+    props.audioSession.addPlaylistListener((newQueue) => {
+        setQueue(newQueue);
+    });
+
     const maxDisplayedPlaylist = 2;
     const playlistSnippet = createMemo(() => {
-        const playlist = props.queue().playlist;
+        const playlist = queue();
         let playlistSnippet: Metadata[] = [];
         playlist.slice(0,
             playlist.length > maxDisplayedPlaylist ? maxDisplayedPlaylist + 1 : playlist.length)
@@ -25,7 +27,7 @@ export default function PlayerBar(props: {
         return playlistSnippet;
     });
 
-    const playlistLength = createMemo(() => props.queue().playlist.length);
+    const playlistLength = createMemo(() => queue().length);
 
     return (
         <div class="player has-text-centered mt-4">
@@ -53,7 +55,7 @@ export default function PlayerBar(props: {
                                                     //recalculate the correct index of the playlist
                                                     //index is the index of the playlistSnippet
                                                     //the index to remove is "flipped": instead of 0,1,2... it is ...2,1,0
-                                                    props.onRemoveFromPlaylist(playlistSnippet.length - 1 - index);
+                                                    props.audioSession.removeFromPlaylist(playlistSnippet.length - 1 - index);
                                                 }} />}
                                         </td>
                                     </tr>
@@ -62,10 +64,7 @@ export default function PlayerBar(props: {
                         </table>
                     </div>
                 </div>
-                <AudioControls player={props.player}
-                    onNextTrack={() => {
-                        props.onRemoveFromPlaylist(0);
-                    }} />
+                <AudioControls audioSession={props.audioSession} />
             </div>
         </div>
     );

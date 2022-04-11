@@ -1,65 +1,56 @@
-import { createSignal, onMount } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
 import { secondsToString } from "../miscellaneous/time-conversion";
-import AudioPlayer from "../player/audio-player";
+import { AudioPlayerState } from "../player/audio-player";
+import { AudioSession } from "../player/audio-session";
 import { NextTrackBtn, PauseBtn, PlayBtn, StopBtn } from "./icon-btns";
 
 export function AudioControls(props: {
-    player: AudioPlayer;
-    onNextTrack: () => void;
+    audioSession: AudioSession;
 }) {
-    const [audioState, setAudioState] = createSignal({
+    const [audioState, setAudioState] = createSignal<AudioPlayerState>({
+        assetID: "",
+        isPlaying: false,
         currentTime: 0,
         duration: 0,
     });
+    props.audioSession.addOnStateChangeListener((newState) => setAudioState(newState));
 
-    function setPlaying(play: boolean) {
-        props.player.setPlaying(play);
-    }
+    const setPlaying = (play: boolean) => {
+        props.audioSession.setNewPlayerState({
+            isPlaying: play
+        });
+    };
 
     function seek(time: number) {
-        props.player.seek(time);
+        props.audioSession.setNewPlayerState({
+            currentTime: time
+        });
     }
 
     function stop() {
-        props.player.setPlaying(false);
-        props.player.seek(0);
+        props.audioSession.setNewPlayerState({
+            isPlaying: false,
+            currentTime: 0,
+        });
     }
 
-    onMount(() => {
-        props.player.addTimeUpdateListener(newTime => {
-            setAudioState({ ...audioState(), currentTime: newTime });
-        });
-        props.player.addDurationUpdateListener(newDuration => {
-            setAudioState({ ...audioState(), duration: newDuration });
-        });
-        props.player.addOnEndedListener(() => {
-            props.onNextTrack();
-        });
-
-        document.onkeydown = event => {
-            //32 = Space
-            if (event.keyCode === 32) {
-                setPlaying(props.player.isPaused());
-            }
-        }
-    });
-
-    const disabled = props.player.getCurrentAsset() ? false : true;
+    const disabled = createMemo(() => audioState().assetID !== "" ? false : true);
 
     return (
         <div class="columns is-vcentered">
-            {props.player.isPaused() ?
-                <PlayBtn disabled={disabled}
-                    onClick={() => {
-                        setPlaying(true);
-                    }} />
-                :
-                <PauseBtn disabled={disabled}
+            {audioState().isPlaying ?
+                <PauseBtn disabled={disabled()}
                     onClick={() => {
                         setPlaying(false);
                     }} />
+                :
+                <PlayBtn disabled={disabled()}
+                    onClick={() => {
+                        console.log("TEST", "PlayBtn clicked")
+                        setPlaying(true);
+                    }} />
             }
-            <StopBtn disabled={disabled}
+            <StopBtn disabled={disabled()}
                 onClick={() => {
                     stop();
                 }} />
@@ -74,9 +65,9 @@ export function AudioControls(props: {
             <div style={{ "whiteSpace": "nowrap" }} class="mr-2">
                 {secondsToString(audioState().currentTime)} / {secondsToString(audioState().duration)}
             </div>
-            <NextTrackBtn disabled={disabled}
+            <NextTrackBtn disabled={disabled()}
                 onClick={() => {
-                    props.onNextTrack();
+                    props.audioSession.nextTrack();
                 }} />
         </div >
     );

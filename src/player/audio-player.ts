@@ -1,20 +1,35 @@
 import { BackendStore } from "../backend/backend";
 import AudioEBUR128 from "./audio-ebur128";
+import { setMediaSessionMetadata } from "./media-session";
 
+export type AudioPlayerState = {
+    assetID: string;
+    currentTime: number;
+    duration: number;
+    isPlaying: boolean;
+}
+
+/**
+ * `AudioPlayer` wraps multiple audio objects and provides unified access to the full audio setup.
+ */
 export default class AudioPlayer {
-    private assetID: string = "";
-    private thumbnailDataURL: string = "";
     private backend: BackendStore;
     private audioSrc: HTMLAudioElement;
     private audioContext: AudioContext;
     private analyser: AnalyserNode;
     readonly ebur128analyser: AudioEBUR128;
-    private onTimeUpdateListener: ((newTime: number) => void)[] = [];
-    private onDurationUpdateListener: ((newDuration: number) => void)[] = [];
     private onEndedListener: (() => void)[] = [];
+    private onStateChangeListener: ((newState: AudioPlayerState) => void)[] = [];
+    private state: AudioPlayerState;
 
     constructor(backend: BackendStore) {
         this.backend = backend;
+        this.state = {
+            assetID: "",
+            currentTime: 0,
+            duration: 0,
+            isPlaying: false,
+        };
         this.audioContext = new window.AudioContext;
         this.audioSrc = new Audio();
         this.audioSrc.ontimeupdate = this.onTimeUpdate.bind(this);
@@ -27,33 +42,14 @@ export default class AudioPlayer {
         this.ebur128analyser = new AudioEBUR128(this.audioContext, track);
         track.connect(this.analyser)
             .connect(this.audioContext.destination);
-
-        //MediaSession API
-        if ("mediaSession" in navigator) {
-            // @ts-ignore
-            navigator.mediaSession.setActionHandler("play", _event => { this.setPlaying(true) });
-            // @ts-ignore
-            navigator.mediaSession.setActionHandler("pause", _event => { this.setPlaying(false) });
-            // @ts-ignore
-            navigator.mediaSession.setActionHandler("seekbackward", _event => { this.seekRelative(-10) });
-            // @ts-ignore
-            navigator.mediaSession.setActionHandler("seekforward", _event => { this.seekRelative(10) });
-            // @ts-ignore
-            //navigator.mediaSession.setActionHandler("previoustrack", event => { console.log("previoustrack", event) });
-            // @ts-ignore
-            navigator.mediaSession.setActionHandler("nexttrack", _event => {
-                this.onEndedListener.forEach(listener => {
-                    listener();
-                });
-            });
-        } else {
-            console.warn("MediaSession API is not supported!");
-        }
     }
 
     async changeSource(newAsset: string, playImmediately: boolean) {
-        if (newAsset !== this.assetID) {
-            this.assetID = newAsset;
+        if (newAsset !== this.state.assetID) {
+            this.changeState({
+                ...this.state,
+                assetID: newAsset,
+            })
             //reload audio src when the asset changed
             const audioData = this.backend.mustGet(newAsset).file;
             const audioDataSrcURL = URL.createObjectURL(audioData)
@@ -74,37 +70,52 @@ export default class AudioPlayer {
                 document.title = "BBAP";
             }
 
-            if ("mediaSession" in navigator) {
-                // thumbnail data handling: revoke previous one and set a new one
-                URL.revokeObjectURL(this.thumbnailDataURL);
-                const thumbnailData = await this.backend.getThumbnail(newAsset);
-                this.thumbnailDataURL = thumbnailData ? URL.createObjectURL(thumbnailData) : "";
-                // @ts-ignore
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: meta.title,
-                    artist: meta.artist,
-                    album: meta.album,
-                    artwork: [
-                        // Note: chrome needs the fields sizes and type to be set, even if the values are wrong
-                        { src: this.thumbnailDataURL, sizes: "128x128", type: "image/jpg" },
-                    ]
-                });
-            }
+            const thumbnailData = await this.backend.getThumbnail(newAsset);
+            setMediaSessionMetadata(meta, thumbnailData);
         }
+    }
+
+    /**
+     * Set the audio player state with new values.
+     * @param newState the new state values
+     */
+    public setNewPlayerState(newState: {
+        isPlaying?: boolean;
+        currentTime?: number;
+    }) {
+        if (newState.isPlaying) {
+            this.setPlaying(newState.isPlaying);
+        }
+        if (newState.currentTime) {
+            this.seek(newState.currentTime);
+        }
+    }
+
+    /**
+     * Sets a new state and calls the callbacks for changes in the state.
+     * @param newState the new state
+     */
+    private changeState(newState: AudioPlayerState) {
+        this.state = newState;
+        this.onStateChangeListener.forEach(listener => {
+            listener(newState);
+        });
     }
 
     private onTimeUpdate() {
         const newTime = this.audioSrc.currentTime;
-        this.onTimeUpdateListener.forEach(listener => {
-            listener(newTime);
-        });
+        this.changeState({
+            ...this.state,
+            currentTime: newTime,
+        })
     }
 
     private onDurationChange() {
         const newDuration = this.audioSrc.duration;
-        this.onDurationUpdateListener.forEach(listener => {
-            listener(newDuration);
-        });
+        this.changeState({
+            ...this.state,
+            duration: newDuration,
+        })
     }
 
     private onEnded() {
@@ -113,9 +124,8 @@ export default class AudioPlayer {
         });
     }
 
-    getCurrentAsset(): string {
-        return this.assetID;
-    }
+    // TODO remove unused functions below
+
 
     getCurrentTime(): number {
         return this.audioSrc.currentTime;
@@ -154,20 +164,16 @@ export default class AudioPlayer {
         this.audioSrc.currentTime = 0;
     }
 
-    addTimeUpdateListener(listener: (newTime: number) => void) {
-        this.onTimeUpdateListener.push(listener);
+    removeStateChangeListener(listener: (newState: AudioPlayerState) => void) {
+        this.onStateChangeListener = this.onStateChangeListener.filter(l => l !== listener);
     }
 
-    removeTimeUpdateListener(listener: (newTime: number) => void) {
-        this.onTimeUpdateListener = this.onTimeUpdateListener.filter(l => l !== listener);
+    addOnStateChangeListener(listener: (newState: AudioPlayerState) => void) {
+        this.onStateChangeListener.push(listener);
     }
 
-    addDurationUpdateListener(listener: (newDuration: number) => void) {
-        this.onDurationUpdateListener.push(listener);
-    }
-
-    removeDurationUpdateListener(listener: (newDuration: number) => void) {
-        this.onDurationUpdateListener = this.onDurationUpdateListener.filter(l => l !== listener);
+    removeEndedListener(listener: () => void) {
+        this.onEndedListener = this.onEndedListener.filter(l => l !== listener);
     }
 
     addOnEndedListener(listener: () => void) {
