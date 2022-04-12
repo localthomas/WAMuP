@@ -4,6 +4,9 @@
 
 body {
   font-family: var(--font-sans);
+  hyphens: auto;
+  text-align: justify;
+  text-align-last: none;
 }
 
 button {
