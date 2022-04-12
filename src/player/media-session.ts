@@ -15,6 +15,14 @@ export function registerMediaSessionHandlers(
          */
         seekRelative: (seconds: number) => void,
         /**
+         * callback for absolute seeking with an absolute seek value (i.e. it is always a positive number or 0)
+         */
+        seekAbsolute: (seconds: number) => void,
+        /**
+         * callback for executing a stop function for the current playback
+         */
+        stop: () => void,
+        /**
          * callback when the next track should be played
          */
         nextTrack: (() => void),
@@ -23,8 +31,10 @@ export function registerMediaSessionHandlers(
     if ("mediaSession" in navigator) {
         navigator.mediaSession.setActionHandler("play", _event => { callbacks.setPlaying(true); });
         navigator.mediaSession.setActionHandler("pause", _event => { callbacks.setPlaying(false); });
-        navigator.mediaSession.setActionHandler("seekbackward", _event => { callbacks.seekRelative(-10); });
-        navigator.mediaSession.setActionHandler("seekforward", _event => { callbacks.seekRelative(10); });
+        navigator.mediaSession.setActionHandler("seekbackward", event => { callbacks.seekRelative(event.seekOffset || -10); });
+        navigator.mediaSession.setActionHandler("seekforward", event => { callbacks.seekRelative(event.seekOffset || 10); });
+        navigator.mediaSession.setActionHandler("seekto", event => { callbacks.seekAbsolute(event.seekTime || 0); });
+        navigator.mediaSession.setActionHandler("stop", _event => { callbacks.stop(); });
         // TODO: implement previous track function?
         //navigator.mediaSession.setActionHandler("previoustrack", event => { console.log("previoustrack", event) });
         navigator.mediaSession.setActionHandler("nexttrack", _event => { callbacks.nextTrack(); });
@@ -38,10 +48,8 @@ export function setMediaSessionMetadata(metadata: Metadata, thumbnail: Blob | un
     // Not multiple, even if they have the same content, but are different sizes!
     if ("mediaSession" in navigator) {
         // thumbnail data handling: revoke previous one and set a new one
+        // note: to prevent a race condition (deleting old thumbnail before setting a new one), delete after a new was set
         const previousThumbnailURL = navigator.mediaSession.metadata?.artwork[0].src;
-        if (previousThumbnailURL) {
-            URL.revokeObjectURL(previousThumbnailURL);
-        }
         const thumbnailDataURL = thumbnail ? URL.createObjectURL(thumbnail) : "";
         // @ts-ignore
         navigator.mediaSession.metadata = new MediaMetadata({
@@ -52,5 +60,9 @@ export function setMediaSessionMetadata(metadata: Metadata, thumbnail: Blob | un
                 { src: thumbnailDataURL },
             ]
         });
+        if (previousThumbnailURL) {
+            // TODO: deletion is temporarily disabled, because it spawn random "net::ERR_FILE_NOT_FOUND" errors?!
+            //URL.revokeObjectURL(previousThumbnailURL);
+        }
     }
 }

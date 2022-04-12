@@ -47,10 +47,26 @@ export class AudioSession {
                     return { currentTime: oldState.currentTime + offset };
                 });
             },
+            seekAbsolute: (time) => {
+                this.audioPlayer.setNewPlayerState(() => {
+                    return { currentTime: time };
+                });
+            },
+            stop: () => {
+                this.audioPlayer.setNewPlayerState(() => {
+                    return {
+                        isPlaying: false,
+                        currentTime: 0,
+                    }
+                });
+            },
             nextTrack: () => {
                 this.nextTrack();
             }
         });
+
+        // setup for listening to changes of the audio player
+        this.audioPlayer.addOnStateChangeListener(this.onAudioPlayerStateChange.bind(this));
 
         console.debug("initialized AudioSession");
     }
@@ -59,7 +75,7 @@ export class AudioSession {
      * This function should be called, if the playlist was changed (see constructor of this class).
      * @param list the new playlist
      */
-    private async onPlaylistChange(playlist: string[]) {
+    private onPlaylistChange(playlist: string[]) {
         // if the playlist changed, set a new asset for the player
         const newAsset = playlist[0];
         if (newAsset) {
@@ -69,16 +85,26 @@ export class AudioSession {
                     isPlaying: true,
                 };
             });
+        }
+    }
 
+    /**
+     * This function should be called when the AudioPlayerState was changed (see constructor of this class).
+     * @param newState the new audio player state
+     * @param oldState the audio player state before the change
+     */
+    private async onAudioPlayerStateChange(newState: AudioPlayerState, oldState: AudioPlayerState) {
+        // only react to changes in the current asset
+        if (oldState.assetID !== newState.assetID) {
             // when updating the player, also update the Media Session API
-            const asset = this.backend.get(newAsset);
-            const thumbnail = await this.backend.getThumbnail(newAsset);
+            const asset = this.backend.get(newState.assetID);
+            const thumbnail = await this.backend.getThumbnail(newState.assetID);
             if (asset) {
                 setMediaSessionMetadata(asset.metadata, thumbnail);
             }
 
             // when updating the player, also update the title of the web page
-            const meta = this.backend.mustGet(newAsset).metadata;
+            const meta = this.backend.mustGet(newState.assetID).metadata;
             if (meta) {
                 document.title = meta.title + " • " + meta.artist + " • BBAP";
             } else {

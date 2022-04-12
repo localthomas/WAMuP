@@ -18,7 +18,7 @@ export default class AudioPlayer {
     private analyser: AnalyserNode;
     readonly ebur128analyser: AudioEBUR128;
     private onEndedListener: (() => void)[] = [];
-    private onStateChangeListener: ((newState: AudioPlayerState) => void)[] = [];
+    private onStateChangeListener: ((newState: AudioPlayerState, oldState: AudioPlayerState) => void)[] = [];
     private state: AudioPlayerState;
 
     constructor(backend: BackendStore) {
@@ -78,13 +78,13 @@ export default class AudioPlayer {
         const newState = newStateFunc(this.state);
 
         // Note: apply the playing state and seeking after loading a potentially new asset.
-        if (newState.assetID) {
+        if (newState.assetID !== undefined) {
             this.changeSource(newState.assetID);
         }
-        if (newState.isPlaying) {
+        if (newState.isPlaying !== undefined) {
             this.setPlaying(newState.isPlaying);
         }
-        if (newState.currentTime) {
+        if (newState.currentTime !== undefined) {
             this.audioSrc.currentTime = newState.currentTime;
         }
     }
@@ -94,9 +94,10 @@ export default class AudioPlayer {
      * @param newState the new state
      */
     private changeState(newState: AudioPlayerState) {
+        const oldState = this.state;
         this.state = newState;
         this.onStateChangeListener.forEach(listener => {
-            listener(newState);
+            listener(newState, oldState);
         });
     }
 
@@ -126,11 +127,11 @@ export default class AudioPlayer {
         play ? this.audioSrc.play() : this.audioSrc.pause();
     }
 
-    removeStateChangeListener(listener: (newState: AudioPlayerState) => void) {
+    removeStateChangeListener(listener: (newState: AudioPlayerState, oldState: AudioPlayerState) => void) {
         this.onStateChangeListener = this.onStateChangeListener.filter(l => l !== listener);
     }
 
-    addOnStateChangeListener(listener: (newState: AudioPlayerState) => void) {
+    addOnStateChangeListener(listener: (newState: AudioPlayerState, oldState: AudioPlayerState) => void) {
         this.onStateChangeListener.push(listener);
     }
 
