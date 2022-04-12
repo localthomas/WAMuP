@@ -43,7 +43,11 @@ export default class AudioPlayer {
             .connect(this.audioContext.destination);
     }
 
-    async changeSource(newAsset: string, playImmediately: boolean) {
+    /**
+     * Load a new asst displacing the currently loaded one immediately.
+     * @param newAsset the new asset's ID
+     */
+    private async changeSource(newAsset: string) {
         if (newAsset !== this.state.assetID) {
             this.changeState({
                 ...this.state,
@@ -57,24 +61,31 @@ export default class AudioPlayer {
             this.audioSrc.src = audioDataSrcURL;
             // set the audio context to resume, if it was suspended by the browser
             this.audioContext.resume();
-            if (playImmediately) this.audioSrc.play();
             console.debug("reloaded player with", newAsset);
         }
     }
 
     /**
      * Set the audio player state with new values.
-     * @param newState the new state values
+     * Note that changing the asset takes precedence, so all other values are applied afterwards.
+     * @param newStateFunc a function that generates the new state values
      */
-    public setNewPlayerState(newState: {
+    public setNewPlayerState(newStateFunc: (currentState: AudioPlayerState) => {
+        assetID?: string;
         isPlaying?: boolean;
         currentTime?: number;
     }) {
+        const newState = newStateFunc(this.state);
+
+        // Note: apply the playing state and seeking after loading a potentially new asset.
+        if (newState.assetID) {
+            this.changeSource(newState.assetID);
+        }
         if (newState.isPlaying) {
             this.setPlaying(newState.isPlaying);
         }
         if (newState.currentTime) {
-            this.seek(newState.currentTime);
+            this.audioSrc.currentTime = newState.currentTime;
         }
     }
 
@@ -111,44 +122,8 @@ export default class AudioPlayer {
         });
     }
 
-    // TODO remove unused functions below
-
-
-    getCurrentTime(): number {
-        return this.audioSrc.currentTime;
-    }
-
-    getDuration(): number {
-        return this.audioSrc.duration;
-    }
-
-    getAnalyserNode(): AnalyserNode {
-        return this.analyser;
-    }
-
-    getSampleRate(): number {
-        return this.audioContext.sampleRate;
-    }
-
-    isPaused(): boolean {
-        return this.audioSrc.paused;
-    }
-
-    setPlaying(play: boolean) {
+    private setPlaying(play: boolean) {
         play ? this.audioSrc.play() : this.audioSrc.pause();
-    }
-
-    seek(time: number) {
-        this.audioSrc.currentTime = time;
-    }
-
-    seekRelative(offset: number) {
-        this.seek(this.audioSrc.currentTime + offset);
-    }
-
-    stop() {
-        this.audioSrc.pause();
-        this.audioSrc.currentTime = 0;
     }
 
     removeStateChangeListener(listener: (newState: AudioPlayerState) => void) {

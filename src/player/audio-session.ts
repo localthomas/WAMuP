@@ -27,17 +27,25 @@ export class AudioSession {
         document.onkeydown = event => {
             //32 = Space
             if (event.keyCode === 32) {
-                this.audioPlayer.setPlaying(this.audioPlayer.isPaused());
+                this.audioPlayer.setNewPlayerState(oldState => {
+                    return {
+                        isPlaying: !oldState.isPlaying,
+                    };
+                });
             }
         }
 
         // setup of MediaSession:
         registerMediaSessionHandlers({
             setPlaying: (playing) => {
-                this.audioPlayer.setPlaying(playing);
+                this.audioPlayer.setNewPlayerState(() => {
+                    return { isPlaying: playing };
+                });
             },
             seekRelative: (offset) => {
-                this.audioPlayer.seekRelative(offset);
+                this.audioPlayer.setNewPlayerState((oldState) => {
+                    return { currentTime: oldState.currentTime + offset };
+                });
             },
             nextTrack: () => {
                 this.nextTrack();
@@ -55,7 +63,12 @@ export class AudioSession {
         // if the playlist changed, set a new asset for the player
         const newAsset = playlist[0];
         if (newAsset) {
-            this.audioPlayer.changeSource(newAsset, true);
+            this.audioPlayer.setNewPlayerState(() => {
+                return {
+                    assetID: newAsset,
+                    isPlaying: true,
+                };
+            });
 
             // when updating the player, also update the Media Session API
             const asset = this.backend.get(newAsset);
@@ -124,7 +137,7 @@ export class AudioSession {
         isPlaying?: boolean;
         currentTime?: number;
     }) {
-        this.audioPlayer.setNewPlayerState(newState);
+        this.audioPlayer.setNewPlayerState(() => newState);
     }
 
     /**
