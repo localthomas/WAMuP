@@ -86,6 +86,9 @@ export class AudioSession {
                 };
             });
         }
+
+        // notify all listeners of the changed queue
+        this.onPlaylistListener.forEach(listener => listener(playlist));
     }
 
     /**

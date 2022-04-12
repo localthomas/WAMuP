@@ -36,6 +36,7 @@ export function registerMediaSessionHandlers(
         navigator.mediaSession.setActionHandler("seekto", event => { callbacks.seekAbsolute(event.seekTime || 0); });
         navigator.mediaSession.setActionHandler("stop", _event => { callbacks.stop(); });
         // TODO: implement previous track function?
+        // TODO: remove previoustrack handler, if there is no previous track
         //navigator.mediaSession.setActionHandler("previoustrack", event => { console.log("previoustrack", event) });
         navigator.mediaSession.setActionHandler("nexttrack", _event => { callbacks.nextTrack(); });
     } else {
