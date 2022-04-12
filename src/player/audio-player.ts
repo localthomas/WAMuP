@@ -1,6 +1,5 @@
 import { BackendStore } from "../backend/backend";
 import AudioEBUR128 from "./audio-ebur128";
-import { setMediaSessionMetadata } from "./media-session";
 
 export type AudioPlayerState = {
     assetID: string;
@@ -50,28 +49,16 @@ export default class AudioPlayer {
                 ...this.state,
                 assetID: newAsset,
             })
-            //reload audio src when the asset changed
+            // reload audio src when the asset changed
             const audioData = this.backend.mustGet(newAsset).file;
-            const audioDataSrcURL = URL.createObjectURL(audioData)
-            this.audioSrc.onload = () => {
-                URL.revokeObjectURL(audioDataSrcURL);
-                console.log("TEST: AUDIO HAS FIRED onload!")
-            };
+            const audioDataSrcURL = URL.createObjectURL(audioData);
+            // delete the previous audio data that might still be loaded, before setting a new source
+            URL.revokeObjectURL(this.audioSrc.src);
             this.audioSrc.src = audioDataSrcURL;
-            //set the audio context to resume, if it was suspended by the browser
+            // set the audio context to resume, if it was suspended by the browser
             this.audioContext.resume();
             if (playImmediately) this.audioSrc.play();
             console.debug("reloaded player with", newAsset);
-
-            const meta = this.backend.mustGet(newAsset).metadata;
-            if (meta) {
-                document.title = meta.title + " • " + meta.artist + " • BBAP";
-            } else {
-                document.title = "BBAP";
-            }
-
-            const thumbnailData = await this.backend.getThumbnail(newAsset);
-            setMediaSessionMetadata(meta, thumbnailData);
         }
     }
 

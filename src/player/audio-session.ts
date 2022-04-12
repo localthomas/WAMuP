@@ -56,11 +56,20 @@ export class AudioSession {
         const newAsset = playlist[0];
         if (newAsset) {
             this.audioPlayer.changeSource(newAsset, true);
+
             // when updating the player, also update the Media Session API
             const asset = this.backend.get(newAsset);
             const thumbnail = await this.backend.getThumbnail(newAsset);
             if (asset) {
                 setMediaSessionMetadata(asset.metadata, thumbnail);
+            }
+
+            // when updating the player, also update the title of the web page
+            const meta = this.backend.mustGet(newAsset).metadata;
+            if (meta) {
+                document.title = meta.title + " • " + meta.artist + " • BBAP";
+            } else {
+                document.title = "BBAP";
             }
         }
     }

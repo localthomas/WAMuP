@@ -46,7 +46,6 @@ export function AudioControls(props: {
                 :
                 <PlayBtn disabled={disabled()}
                     onClick={() => {
-                        console.log("TEST", "PlayBtn clicked")
                         setPlaying(true);
                     }} />
             }
