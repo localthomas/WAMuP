@@ -31,6 +31,8 @@ export default class AudioPlayer {
         };
         this.audioContext = new window.AudioContext;
         this.audioSrc = new Audio();
+        this.audioSrc.onplay = this.onPlay.bind(this);
+        this.audioSrc.onpause = this.onPause.bind(this);
         this.audioSrc.ontimeupdate = this.onTimeUpdate.bind(this);
         this.audioSrc.ondurationchange = this.onDurationChange.bind(this);
         this.audioSrc.onended = this.onEnded.bind(this);
@@ -101,12 +103,26 @@ export default class AudioPlayer {
         });
     }
 
+    private onPlay() {
+        this.changeState({
+            ...this.state,
+            isPlaying: true,
+        });
+    }
+
+    private onPause() {
+        this.changeState({
+            ...this.state,
+            isPlaying: false,
+        });
+    }
+
     private onTimeUpdate() {
         const newTime = this.audioSrc.currentTime;
         this.changeState({
             ...this.state,
             currentTime: newTime,
-        })
+        });
     }
 
     private onDurationChange() {
@@ -114,7 +130,7 @@ export default class AudioPlayer {
         this.changeState({
             ...this.state,
             duration: newDuration,
-        })
+        });
     }
 
     private onEnded() {
