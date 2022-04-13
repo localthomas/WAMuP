@@ -92,6 +92,31 @@ export default class AudioPlayer {
     }
 
     /**
+     * Get the analyser node of this audio player.
+     * @returns the analyser
+     */
+    public getAnalyserNode(): AnalyserNode {
+        return this.analyser;
+    }
+
+    /**
+     * Get the EBU R128 analyser node of this audio player.
+     * @returns the analyser
+     */
+    public getEBUR128AnalyserNode(): AudioEBUR128 {
+        return this.ebur128analyser;
+    }
+
+    /**
+     * Get the sample rate of the current audio player in Hz.
+     * Note that this value might change with different assets.
+     * @returns the sample rate in Hz
+     */
+    public getSampleRate(): number {
+        return this.audioContext.sampleRate;
+    }
+
+    /**
      * Sets a new state and calls the callbacks for changes in the state.
      * @param newState the new state
      */

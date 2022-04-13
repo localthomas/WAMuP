@@ -77,7 +77,10 @@ function layoutWithLoadedBackend(defaultComponent: JSX.Element, backendStore: Ba
                     />}
                 />
                 <Route path="/visualizer" element={
-                    <Visualizer />}
+                    <Visualizer
+                        backend={backendStore}
+                        audioSession={audioSession}
+                    />}
                 />
                 <Route path="/albums" element={
                     <Albums

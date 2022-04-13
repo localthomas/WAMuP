@@ -19,6 +19,8 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
+    "@types/deep-equal": "^1.0.1",
+    "deep-equal": "^2.0.5",
     "murmur-32": "^1.0.0",
     "music-metadata-browser": "^2.5.5",
     "pollen-css": "^4.3.0",

@@ -1,4 +1,5 @@
 import { BackendStore } from "../backend/backend";
+import AudioEBUR128 from "./audio-ebur128";
 import AudioPlayer, { AudioPlayerState } from "./audio-player";
 import { registerMediaSessionHandlers, setMediaSessionMetadata } from "./media-session";
 import { ObservableQueue } from "./queue";
@@ -167,6 +168,31 @@ export class AudioSession {
         currentTime?: number;
     }) {
         this.audioPlayer.setNewPlayerState(() => newState);
+    }
+
+    /**
+     * Get the analyser node of the underlying audio player.
+     * @returns the analyser
+     */
+    public getAnalyserNode(): AnalyserNode {
+        return this.audioPlayer.getAnalyserNode();
+    }
+
+    /**
+     * Get the EBU R128 analyser node of the underlying audio player.
+     * @returns the analyser
+     */
+    public getEBUR128AnalyserNode(): AudioEBUR128 {
+        return this.audioPlayer.getEBUR128AnalyserNode();
+    }
+
+    /**
+     * Get the sample rate of the underlying audio player in Hz.
+     * Note that this value might change with different assets.
+     * @returns the sample rate in Hz
+     */
+    public getSampleRate(): number {
+        return this.audioPlayer.getSampleRate();
     }
 
     /**
