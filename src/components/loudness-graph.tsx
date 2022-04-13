@@ -1,5 +1,5 @@
 import deepEqual from "deep-equal";
-import { Accessor, createEffect, createSignal } from "solid-js";
+import { Accessor, createEffect, createMemo, createSignal } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import connectAudioEBUR128Prefilter from "../player/audio-ebur128-prefilter";
 import { AudioPlayerState } from "../player/audio-player";
@@ -95,11 +95,15 @@ export default function LoudnessGraph(props: {
         }
     });
 
-    const integratedLoudnessBody = Number.isNaN(loudnessState().integrated) ?
-        <LoadingSpinnerSmall /> : loudnessState().integrated.toFixed(1);
+    const integratedLoudnessBody = createMemo(() =>
+        Number.isNaN(loudnessState().integrated) ?
+            <LoadingSpinnerSmall /> : loudnessState().integrated.toFixed(1)
+    );
 
-    const loudnessRangeBody = Number.isNaN(loudnessState().loudnessRange) ?
-        <LoadingSpinnerSmall /> : loudnessState().loudnessRange.toFixed(1);
+    const loudnessRangeBody = createMemo(() =>
+        Number.isNaN(loudnessState().loudnessRange) ?
+            <LoadingSpinnerSmall /> : loudnessState().loudnessRange.toFixed(1)
+    );
 
     return (
         <div class="mb-0 mt-2">
