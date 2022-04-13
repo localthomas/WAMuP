@@ -1,3 +1,4 @@
+import { NavLink } from "solid-app-router";
 import { createMemo, createSignal } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import { Metadata } from "../backend/metadata";
@@ -36,10 +37,9 @@ export default function PlayerBar(props: {
                     <div class="column has-text-justified">
                         {playlistLength() > maxDisplayedPlaylist + 1 ?
                             <p class="has-text-centered">
-                                {/* TODO: NavLink */}
-                                <a href="/#/queue">
+                                <NavLink href="/queue">
                                     {playlistLength() - maxDisplayedPlaylist - 1} more...
-                                </a>
+                                </NavLink>
                             </p>
                             :
                             ""}
