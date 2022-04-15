@@ -70,27 +70,32 @@ export default function LoudnessGraph(props: {
                     shortTermLoudnessMap: [],
                 });
 
-                const audioCtx = new AudioContext();
-                audioCtx.decodeAudioData(await asset.file.arrayBuffer(), function (buffer) {
-                    const offlineAudio = new OfflineAudioContext(
-                        buffer.numberOfChannels, buffer.length, buffer.sampleRate);
-                    // create input buffer
-                    const bufferSource = offlineAudio.createBufferSource();
-                    bufferSource.buffer = buffer;
-                    // pre-filter the data
-                    connectAudioEBUR128Prefilter(offlineAudio, bufferSource, offlineAudio.destination);
+                // TODO: put decoding of audio data in separate function
 
-                    // let the filter run and use the result to calculate values
-                    bufferSource.start();
-                    offlineAudio.startRendering().then(resultBuffer => {
-                        // re-calculate the loudnessState, if the songBuffer changes
-                        calculateLoudnessState(resultBuffer, creationParameters.shortTermLoudnessMapWindowSize);
-                    }).catch(err => {
-                        console.error("could not render OfflineAudioContext:", err);
-                    });
-                }).catch(err => {
-                    console.error("Could not decode audio data:", err);
-                });
+                // use decodeAudioCtx only for decoding the audio data
+                const decodeAudioCtx = new OfflineAudioContext(1, 1024, 44100);
+                console.time("TEST decode audio data");
+                const buffer = await decodeAudioCtx.decodeAudioData(await asset.file.arrayBuffer());
+                console.timeEnd("TEST decode audio data");
+
+                // create a new audio context with the correct values from the decoded audio data
+                const offlineAudio = new OfflineAudioContext(
+                    buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+
+                // create input buffer
+                const bufferSource = offlineAudio.createBufferSource();
+                bufferSource.buffer = buffer;
+
+                // pre-filter the data
+                connectAudioEBUR128Prefilter(offlineAudio, bufferSource, offlineAudio.destination);
+
+                // let the filter run and use the result to calculate values
+                console.time("TEST offline rendering");
+                bufferSource.start();
+                const resultBuffer = await offlineAudio.startRendering();
+                console.timeEnd("TEST offline rendering");
+                // re-calculate the loudnessState, if the songBuffer changes
+                calculateLoudnessState(resultBuffer, creationParameters.shortTermLoudnessMapWindowSize);
             }
         }
     });
@@ -333,6 +338,8 @@ function framesOf100ms(audio: AudioBuffer): number[] {
  * @param weighting the channel weighting used in the calculation
  */
 function loudnessOfAudioBuffer(audio: AudioBuffer, frameSizeS: number, analysisWindowSizeS: number, weighting: (channel: number) => number): number[] {
+    console.time("loudnessOfAudioBuffer");
+
     // generate the powers (per channel, per frame)
     let powers = [];
     for (let channel = 0; channel < audio.numberOfChannels; channel++) {
@@ -360,6 +367,7 @@ function loudnessOfAudioBuffer(audio: AudioBuffer, frameSizeS: number, analysisW
         loudness.push(loudnessOfPowers(tmpPowers, weighting));
     }
 
+    console.timeEnd("loudnessOfAudioBuffer");
     return loudness;
 }
 
