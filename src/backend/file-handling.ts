@@ -96,6 +96,8 @@ async function runMultipleWorkers<T>(partitionedPayload: any[], scriptURL: URL, 
                     // a worker has finished and provided a result
                     // store the result in the results array
                     results[i] = data;
+                    // terminate the worker, as it does not have any more work to do
+                    workers[i].terminate();
                     // decrement the running counter
                     workersStillWorking--;
                     // check if this "onmessage" is the last of all workers
