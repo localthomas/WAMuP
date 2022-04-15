@@ -1,5 +1,5 @@
-import { Accessor, createEffect, createMemo, createSignal } from "solid-js";
-import { BackendState, Statistics } from "../backend/backend";
+import { Accessor, createMemo } from "solid-js";
+import { BackendState } from "../backend/backend";
 
 /**
  * Presents some statistics about a backend in a table.

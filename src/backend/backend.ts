@@ -1,4 +1,4 @@
-import { Progress } from "../workers/shared-types";
+import { Progress } from "../miscellaneous/parallel";
 import { createPerFileData } from "./file-handling";
 import { getThumbnail, Metadata, MetadataWithID } from "./metadata";
 
