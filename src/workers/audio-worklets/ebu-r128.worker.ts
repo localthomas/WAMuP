@@ -1,19 +1,4 @@
-//Copy from ./message-types.ts since the import with web-workers does not work as expected
-/**
- * LoudnessType is used to signal the type of a loudness value.
- */
-export enum LoudnessType {
-    Momentary = "momentary",
-    ShortTerm = "shortTerm",
-};
-
-/**
- * LoudnessMessage is used as the message between an AudioWorklet and the main Thread.
- */
-export type LoudnessMessage = {
-    type: LoudnessType;
-    loudness: number;
-};
+import { LoudnessMessage, LoudnessType } from "./message-types";
 
 /**
  * EchoProcessor send the input data to the main thread via postMessage.
