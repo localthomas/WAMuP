@@ -51,10 +51,6 @@ export default class AudioPlayer {
      */
     private async changeSource(newAsset: string) {
         if (newAsset !== this.state.assetID) {
-            this.changeState({
-                ...this.state,
-                assetID: newAsset,
-            })
             // reload audio src when the asset changed
             const audioData = this.backend.mustGet(newAsset).file;
             const audioDataSrcURL = URL.createObjectURL(audioData);
@@ -64,6 +60,10 @@ export default class AudioPlayer {
             // set the audio context to resume, if it was suspended by the browser
             this.audioContext.resume();
             console.debug("reloaded player with", newAsset);
+            this.changeState({
+                ...this.state,
+                assetID: newAsset,
+            });
         }
     }
 
