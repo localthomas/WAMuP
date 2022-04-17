@@ -14,7 +14,7 @@ export interface ItemWithIndex<T> {
 /**
  * Runs a list of items on multiple WebWorkers in parallel and returns the result after all workers have finished.
  * The returned list is the same length as `items` and each worker only works on one item.
- * The indices of both lists **do not** correspond to each other, e.g. items[1] might become result[10].
+ * The indices of both lists do correspond to each other, e.g. items[1] becomes result[1].
  * The worker should work on one item of type `T` and output another of type `S`.
  *
  * Items need to able to be cloned to be send to the workers.
@@ -22,6 +22,7 @@ export interface ItemWithIndex<T> {
  * Note that no type-checking is taking place, so the type parameters `T` and `S` are only for readability.
  * @param items the payload is a list of items
  * @param scriptURL the URL for loading the WebWorker script
+ * @param progressCallback a callback that is fired after an item has been processed
  * @returns the results of all workers
  */
 export async function runMultipleWorkers<T, S>(items: T[], scriptURL: URL, progressCallback: (progress: Progress) => void): Promise<S[]> {

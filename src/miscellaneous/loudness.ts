@@ -180,38 +180,150 @@ function framesOf100ms(audio: AudioBuffer): number[] {
  * using the values of the analysis-window size before it)
  * @param audio the audio data to use
  * @param frameSizeS the size of the frames that are returned in seconds
- * @param analysisWindowSizeS the window size of the analysed values in seconds
+ * @param analysisWindowSizeS the window size of the analyzed values in seconds
  * @param weighting the channel weighting used in the calculation
  */
 function loudnessOfAudioBuffer(audio: AudioBuffer, frameSizeS: number, analysisWindowSizeS: number, weighting: (channel: number) => number): number[] {
-    // generate the powers (per channel, per frame)
-    let powers = [];
-    for (let channel = 0; channel < audio.numberOfChannels; channel++) {
-        let powersOfChannel = [];
-        const audioDataOfChannel = audio.getChannelData(channel);
-        // the number of samples per frame
-        const frameSizeNumSamples = frameSizeS * audio.sampleRate;
-        let index = 0;
-        do {
-            powersOfChannel.push(powerOfFrame(audioDataOfChannel.slice(index, index + frameSizeNumSamples)));
-            index += frameSizeNumSamples;
-        } while (index < audioDataOfChannel.length)
-        powers.push(powersOfChannel);
+    console.time("loudnessOfAudioBuffer")
+    // first convert the audio buffer into frames, to calculate values for each frame
+    const frames = audioBufferIntoFrames(audio, frameSizeS, weighting);
+
+    /**
+     * The power per channel per frame.
+     * The first index selects the frame number, the second is the channel number.
+     */
+    const powers = frames.map(powersPerChannelOfFrame);
+
+    /**
+     * The list with all combined frame data per window.
+     * The first index is the window and the second the index of the frame within the window.
+     */
+    const analysisWindows = combineValuesIntoAnalysisWindows(powers, frameSizeS, analysisWindowSizeS);
+
+    /** a list of loudness values per analysis window */
+    const result = analysisWindows.map(loudnessOfAnalysisWindow);
+    console.timeEnd("loudnessOfAudioBuffer");
+    return result;
+}
+
+type Frame = {
+    /**
+     * The raw PCM data per channel.
+     */
+    data: Float32Array[];
+    /**
+     * One weight value per channel.
+     */
+    weights: number[];
+};
+
+/**
+ * Convert an audio buffer into a list of frames by slicing the underlying audio data.
+ * @param audioBuffer the audio buffer which holds the PCM data
+ * @param frameSizeS the length of one frame in seconds (the last frame might be shorter)
+ * @param weighting a function for generating weights per channel (cached for each frame)
+ * @returns a list of frames
+ */
+function audioBufferIntoFrames(audioBuffer: AudioBuffer, frameSizeS: number, weighting: (channel: number) => number): Frame[] {
+    /** the number of samples per frame */
+    const frameSizeNumSamples = frameSizeS * audioBuffer.sampleRate;
+    /** the weights per channel */
+    let weights = [];
+    for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+        weights.push(weighting(channel));
     }
 
-    // generate a list of all loudness values
-    let loudness = [];
-
-    for (let i = 0; i < powers[0].length; i++) {
-        const numFrames = Math.round(analysisWindowSizeS / frameSizeS);
-        let tmpPowers = [];
-        for (const [_channel, powersSet] of powers.entries()) {
-            tmpPowers.push(powersSet.slice(i, i + numFrames));
+    // transform multiple audio data tracks (i.e. multiple channels) into frames
+    let frames = [];
+    let index = 0;
+    const numberOfSamplesInTotal = audioBuffer.getChannelData(0).length;
+    do {
+        let data = [];
+        for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
+            const audioDataOfChannel = audioBuffer.getChannelData(channel);
+            const frameSection = audioDataOfChannel.slice(index, index + frameSizeNumSamples);
+            data.push(frameSection);
         }
-        loudness.push(loudnessOfPowers(tmpPowers, weighting));
-    }
+        frames.push({
+            data,
+            weights,
+        });
 
-    return loudness;
+        index += frameSizeNumSamples;
+    } while (index < numberOfSamplesInTotal)
+
+    return frames;
+}
+
+type PowerOfFrame = {
+    /**
+     * The power values of each channel.
+     */
+    powers: number[];
+    /**
+     * One weight value per channel.
+     */
+    weights: number[];
+};
+
+/**
+ * Calculates the power value per audio channel in this frame.
+ * @param frame the frame with audio data
+ * @returns the power value per channel
+ */
+function powersPerChannelOfFrame(frame: Frame): PowerOfFrame {
+    return {
+        powers: frame.data.map(powerOfFrame),
+        weights: frame.weights,
+    };
+}
+
+/**
+ * Creates a list of lists by combining multiple frames into one list, which is called an analysis window.
+ * E.g. a list of 5 frames with each a length of 0.1s is combined into a list of 0.2s long analysis windows.
+ * This results in a list of 5 windows, where each window has a 2 values in it.
+ * Note that this means some values are stored in double
+ * (e.g. in the first window there is one value which overlaps with the second window).
+ *
+ * From the example above: `[0, 1, 2, 3, 4]` becomes `[[0, 1], [1, 2], [2, 3], [3, 4], [4]]`.
+ * @param frames the frames (values) which will be combined
+ * @param frameSizeS how big one frame is in seconds
+ * @param analysisWindowSizeS the size of one window in seconds (should be greater than frame size)
+ * @returns a list of lists where the first index is the analysis window and the second is the index of the value within this window
+ */
+function combineValuesIntoAnalysisWindows<T>(frames: T[], frameSizeS: number, analysisWindowSizeS: number): T[][] {
+    /** the list of all windows; has the same length as the input parameter `frames` */
+    let allWindows = [];
+    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+        /** the number of frames per window */
+        const numFrames = Math.round(analysisWindowSizeS / frameSizeS);
+        /** a list where all items for one window are stored */
+        const windowItems = frames.slice(frameIndex, frameIndex + numFrames);
+        allWindows.push(windowItems);
+    }
+    return allWindows;
+}
+
+/**
+ * Calculate a loudness value for an analysis window with multiple frames and weighting.
+ * @param window the window with frames
+ * @returns the loudness value of all power values of the window
+ */
+function loudnessOfAnalysisWindow(window: PowerOfFrame[]): number {
+    const numberOfChannels = window[0].powers.length;
+    /**
+     * a list of power values,
+     * where the first index is the channel and the second is the frame within the window
+     */
+    let powers: number[][] = [];
+    for (let channel = 0; channel < numberOfChannels; channel++) {
+        let powersPerChannel: number[] = [];
+        for (const frame of window) {
+            powersPerChannel = powersPerChannel.concat(frame.powers[channel]);
+        }
+        powers.push(powersPerChannel);
+    }
+    return loudnessOfPowers(powers, window[0].weights);
 }
 
 function powerOfFrame(data: Float32Array): number {
@@ -222,10 +334,17 @@ function powerOfFrame(data: Float32Array): number {
     return sum / data.length;
 }
 
-function loudnessOfPowers(powers: number[][], weighting: (channel: number) => number): number {
+/**
+ * Convert a list of power values into an aggregated loudness value with weighting.
+ * @param powers a list with the first index being the channel and the second the frame index
+ * @param weights weights per channel
+ * @returns the loudness value
+ */
+function loudnessOfPowers(powers: number[][], weights: number[]): number {
+    console.assert(powers.length === weights.length);
     let sum = 0;
     for (const [channel, powersSet] of powers.entries()) {
-        const weight = weighting(channel);
+        const weight = weights[channel];
         let usedFrames = 0;
         let tmpSum = 0;
         for (const [_, power] of powersSet.entries()) {

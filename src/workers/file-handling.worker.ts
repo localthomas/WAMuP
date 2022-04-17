@@ -1,9 +1,9 @@
 import { PerFileData } from "../backend/file-handling";
 import { getFileHash } from "../backend/file-hashing";
 import { getMetadata } from "../backend/metadata";
-import { registerWorkerFunction } from "./worker-base";
+import { registerParallelWorkerFunction } from "./parallel-worker-base";
 
-registerWorkerFunction(async function (file: File): Promise<PerFileData> {
+registerParallelWorkerFunction(async function (file: File): Promise<PerFileData> {
     // read the binary data of the file once, as it is needed for the metadata and hash
     const fileBlob = new Uint8Array(await file.arrayBuffer());
 

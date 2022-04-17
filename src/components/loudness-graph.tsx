@@ -1,4 +1,4 @@
-import { Accessor, createMemo, createResource, createSignal } from "solid-js";
+import { Accessor, createEffect, createMemo, createResource, createSignal } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import { getAudioBufferFromBlobWithEBUR128Filter } from "../miscellaneous/audio";
 import { getIntegratedLoudness, getLoudnessRange, getShortTermLoudnessWithRange } from "../miscellaneous/loudness";
@@ -25,15 +25,18 @@ export default function LoudnessGraph(props: {
         }
     });
 
-    const loudnessRange = createMemo(() => {
+    const [loudnessRange, setLoudnessRange] = createSignal<number | "loading">(NaN);
+    createEffect(async () => {
         if (audioBufferForCurrentAsset.loading) {
-            return "loading";
-        }
-        const audioBuffer = audioBufferForCurrentAsset();
-        if (audioBuffer) {
-            return getLoudnessRange(audioBuffer);
+            setLoudnessRange("loading");
         } else {
-            return NaN;
+            const audioBuffer = audioBufferForCurrentAsset();
+            if (audioBuffer) {
+                const result = getLoudnessRange(audioBuffer);
+                setLoudnessRange(result);
+            } else {
+                setLoudnessRange(NaN);
+            }
         }
     });
 
