@@ -15,17 +15,27 @@ export default function PlayerBar(props: {
         setQueue(newQueue);
     });
 
-    const maxDisplayedPlaylist = 2;
+    type MetadataWithPlaylistIndex = {
+        metadata: Metadata;
+        index: number;
+    };
+
+    /** The maximum amount of items of the future playlist including the current playing asset. */
+    const maxDisplayedPlaylist = 3;
     const playlistSnippet = createMemo(() => {
-        const playlist = queue();
-        let playlistSnippet: Metadata[] = [];
-        playlist.slice(0,
-            playlist.length > maxDisplayedPlaylist ? maxDisplayedPlaylist + 1 : playlist.length)
-            .forEach((assetID) => {
-                const info = props.backend.mustGet(assetID).metadata;
-                playlistSnippet.unshift(info);
-            });
-        return playlistSnippet;
+        return queue()
+            // get the first x elements of the playlist
+            .slice(0, maxDisplayedPlaylist)
+            // instead of plain asset IDs, map these to their corresponding metadata
+            .map((assetID, index): MetadataWithPlaylistIndex => {
+                const metadata = props.backend.mustGet(assetID).metadata;
+                return {
+                    index,
+                    metadata,
+                };
+            })
+            // reverse the list, as it is displayed "upside down" on the table below
+            .reverse();
     });
 
     const playlistLength = createMemo(() => queue().length);
@@ -35,10 +45,10 @@ export default function PlayerBar(props: {
             <div class="container">
                 <div class="columns is-centered">
                     <div class="column has-text-justified">
-                        {playlistLength() > maxDisplayedPlaylist + 1 ?
+                        {playlistLength() > maxDisplayedPlaylist ?
                             <p class="has-text-centered">
                                 <NavLink href="/queue">
-                                    {playlistLength() - maxDisplayedPlaylist - 1} more...
+                                    {playlistLength() - maxDisplayedPlaylist} more...
                                 </NavLink>
                             </p>
                             :
@@ -46,17 +56,19 @@ export default function PlayerBar(props: {
                         <table class="table is-fullwidth">
                             <tbody>
                                 {playlistSnippet().map((info, index) =>
-                                    <tr class={index == playlistSnippet.length - 1 ? "active-row" : ""}>
-                                        <td>{info.title}</td>
-                                        <td>{info.artist}</td>
+                                    <tr class={index === playlistSnippet().length - 1 ? "active-row" : ""}>
+                                        <td>{info.metadata.title}</td>
+                                        <td>{info.metadata.artist}</td>
                                         <td class="has-text-right" style={{ padding: "0" }}>
-                                            {index == playlistSnippet.length - 1 ? "" : <CrossBtn
-                                                onClick={() => {
-                                                    //recalculate the correct index of the playlist
-                                                    //index is the index of the playlistSnippet
-                                                    //the index to remove is "flipped": instead of 0,1,2... it is ...2,1,0
-                                                    props.audioSession.removeFromPlaylist(playlistSnippet.length - 1 - index);
-                                                }} />}
+                                            {index === playlistSnippet().length - 1 ?
+                                                // do not display any buttons on the current playing asset
+                                                ""
+                                                :
+                                                <CrossBtn
+                                                    small
+                                                    onClick={() => {
+                                                        props.audioSession.removeFromPlaylist(info.index);
+                                                    }} />}
                                         </td>
                                     </tr>
                                 )}
