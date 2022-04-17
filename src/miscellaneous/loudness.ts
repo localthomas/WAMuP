@@ -96,36 +96,42 @@ async function shortTermLoudness(audio: AudioBuffer): Promise<number[]> {
 }
 
 /**
- * Creates a list of short-term loudness values (3s window) of the raw audio data.
- * The range per loudness value is the mean in the 3s window against the peak loudness in this window.
- * The sub-sampling size is 100ms.
- * Note: No windows are discarded, which means even the first 100ms get a value,
- * although the analysis window was only 100ms.
- * Note: The range value always uses the last 3 seconds as the analyzing window.
+ * Creates a list of short-term loudness values of the raw audio data.
+ * The range per loudness value is the mean in the window against the peak loudness in this window.
+ * The sub-sampling size is dynamic and changes with the duration of the audio buffer.
+ * Note: No windows are discarded, which means even the first frame gets a value,
+ * although the analysis window might include multiple frames.
  * @param audio the audio buffer to use as raw audio source
  * @param loudnessWindowSize the window-size in seconds of the loudness values
  */
 export async function getShortTermLoudnessWithRange(audio: AudioBuffer, loudnessWindowSize: number): Promise<LoudnessAndRange[]> {
-    // use 30 100ms frames to calculate short term loudness
-    const ANALYSIS_WINDOW_SIZE = 30;
+    /**
+     * The dynamic analysis frame size is either the same as the window analysis size or smaller,
+     * if the duration is relatively short.
+     * Then it is tuned to roughly equal 1000 frames for analysis.
+     */
+    const dynamicFrameSizeS = audio.duration / 1000;
+    const frameSizeS = Math.min(loudnessWindowSize / 10, dynamicFrameSizeS);
 
-    const frames = await framesOf100ms(audio);
+    /** the actual loudness analysis window size in number of frames */
+    const loudnessWindowSizeNum = Math.ceil(loudnessWindowSize / frameSizeS);
+
+    const frames = await loudnessOfAudioBuffer(audio, frameSizeS, frameSizeS, () => 1);
 
     let windows = [];
 
     for (let i = 0; i < frames.length; i++) {
-        // loudness range analysis with fixed window length
-        const start = i - ANALYSIS_WINDOW_SIZE;
-        const range = loudnessRangeOfWindow(frames.slice(start >= 0 ? start : 0, i));
+        // use a start and end index that are before i
+        const start = Math.max(0, i - loudnessWindowSizeNum);
+        const frameSlice = frames.slice(start, i);
 
-        // the actual loudness analysis window size in number of frames
-        const loudnessWindowSizeNum = loudnessWindowSize / 0.1;
-        const start2 = i - loudnessWindowSizeNum;
-        const loudness = loudnessOfWindow(frames.slice(start2 >= 0 ? start2 : 0, i));
+        const range = loudnessRangeOfWindow(frameSlice);
+
+        const loudness = loudnessOfWindow(frameSlice);
         windows.push({
             loudness,
             range
-        })
+        });
     }
 
     return windows;
@@ -297,6 +303,7 @@ export function powersPerChannelOfFrame(frame: Frame): PowerOfFrame {
  * @returns a list of lists where the first index is the analysis window and the second is the index of the value within this window
  */
 export function combineValuesIntoAnalysisWindows<T>(frames: T[], frameSizeS: number, analysisWindowSizeS: number): T[][] {
+    console.assert(analysisWindowSizeS >= frameSizeS);
     /** the list of all windows; has the same length as the input parameter `frames` */
     let allWindows = [];
     for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {

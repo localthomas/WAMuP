@@ -11,7 +11,7 @@ export default function LoudnessGraph(props: {
     audioState: Accessor<AudioPlayerState>;
     onWantsToSeek: (to: number) => void;
 }) {
-    const DEFAULT_LOUDNESS_WINDOW_SIZE_S = 1; // seconds
+    const DEFAULT_LOUDNESS_WINDOW_SIZE_S = 2.5; // seconds
     const [shortTermLoudnessMapWindowSizeTarget, setShortTermLoudnessMapWindowSizeTarget] = createSignal(DEFAULT_LOUDNESS_WINDOW_SIZE_S);
 
     // cache the current asset, i.e. the signal only triggers, if the value actually changed
@@ -111,7 +111,7 @@ export default function LoudnessGraph(props: {
                     <div>
                         y-axis: loudness in {shortTermLoudnessMapWindowSizeTarget()}s window [{GRAPH_MINIMAL_LOUDNESS}; 0] [LUFS]
                         <br></br>
-                        color: loudness range [LU] in 3s analysis window [0: red; {GRAPH_GREEN_LOUDNESS_RANGE}: green]
+                        color: loudness range [LU] in {shortTermLoudnessMapWindowSizeTarget()}s analysis window [0: red; {GRAPH_GREEN_LOUDNESS_RANGE}: green]
                     </div>
                 </div>
             </div>
@@ -119,7 +119,7 @@ export default function LoudnessGraph(props: {
                 loudnessFrames={shortTermLoudnessMap()}
                 analysisWindowSizeS={shortTermLoudnessMapWindowSizeTarget} />
             <div>
-                <input type="range" min="0.1" max="3" step="0.1" value={shortTermLoudnessMapWindowSizeTarget()}
+                <input type="range" min="0.1" max="5" step="0.1" value={shortTermLoudnessMapWindowSizeTarget()}
                     onChange={event => {
                         setShortTermLoudnessMapWindowSizeTarget(parseFloat(event.currentTarget.value));
                     }}
