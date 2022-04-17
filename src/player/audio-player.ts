@@ -92,6 +92,14 @@ export default class AudioPlayer {
     }
 
     /**
+     * Get the current state of the audio player.
+     * @returns the current state
+     */
+    public getPlayerState(): AudioPlayerState {
+        return this.state;
+    }
+
+    /**
      * Get the analyser node of this audio player.
      * @returns the analyser
      */

@@ -5,7 +5,7 @@ import { LoudnessAndRange } from "../components/loudness-graph-canvas";
  * Note: This function is not equal to the presented MatLab-Function "LoudnessRange". Instead it uses raw audio data.
  * @param audio the audioBuffer to analyze
  */
-export function loudnessRange(audio: AudioBuffer): number {
+export function getLoudnessRange(audio: AudioBuffer): number {
     const shortLoudness = shortTermLoudness(audio);
 
     const ABS_THRESHOLD = -70; // LUFS (= absolute measure)
@@ -40,7 +40,7 @@ export function loudnessRange(audio: AudioBuffer): number {
  * Analyzes the given audio data and calculates the integrated loudness as per ITU-R BS.1770-4.
  * @param audio the audio buffer to analyze
  */
-export function integratedLoudness(audio: AudioBuffer): number {
+export function getIntegratedLoudness(audio: AudioBuffer): number {
     const frames = framesOf100ms(audio);
 
     // filter the blocks as per ITU-R BS.1770-4 with 75% overlap (3 frames with 100ms frames)
@@ -103,7 +103,7 @@ function shortTermLoudness(audio: AudioBuffer): number[] {
  * @param audio the audio buffer to use as raw audio source
  * @param loudnessWindowSize the window-size in seconds of the loudness values
  */
-export function shortTermLoudnessWithRange(audio: AudioBuffer, loudnessWindowSize: number): LoudnessAndRange[] {
+export function getShortTermLoudnessWithRange(audio: AudioBuffer, loudnessWindowSize: number): LoudnessAndRange[] {
     // use 30 100ms frames to calculate short term loudness
     const ANALYSIS_WINDOW_SIZE = 30;
 
@@ -184,8 +184,6 @@ function framesOf100ms(audio: AudioBuffer): number[] {
  * @param weighting the channel weighting used in the calculation
  */
 function loudnessOfAudioBuffer(audio: AudioBuffer, frameSizeS: number, analysisWindowSizeS: number, weighting: (channel: number) => number): number[] {
-    console.time("loudnessOfAudioBuffer");
-
     // generate the powers (per channel, per frame)
     let powers = [];
     for (let channel = 0; channel < audio.numberOfChannels; channel++) {
@@ -213,7 +211,6 @@ function loudnessOfAudioBuffer(audio: AudioBuffer, frameSizeS: number, analysisW
         loudness.push(loudnessOfPowers(tmpPowers, weighting));
     }
 
-    console.timeEnd("loudnessOfAudioBuffer");
     return loudness;
 }
 

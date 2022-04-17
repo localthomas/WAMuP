@@ -46,12 +46,7 @@ function layoutWithLoadedBackend(defaultComponent: JSX.Element, backendStore: Ba
         setQueue(newQueue);
     });
 
-    const [audioState, setAudioState] = createSignal<AudioPlayerState>({
-        assetID: "",
-        isPlaying: false,
-        currentTime: 0,
-        duration: 0,
-    });
+    const [audioState, setAudioState] = createSignal<AudioPlayerState>(audioSession.getPlayerState());
     audioSession.addOnStateChangeListener((newState) => setAudioState(newState));
 
     // page setup, if a fully loaded backend is available

@@ -1,11 +1,10 @@
-import deepEqual from "deep-equal";
-import { Accessor, createEffect, createMemo, createSignal } from "solid-js";
+import { Accessor, createMemo, createResource, createSignal } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import { getAudioBufferFromBlobWithEBUR128Filter } from "../miscellaneous/audio";
-import { integratedLoudness, loudnessRange, shortTermLoudnessWithRange } from "../miscellaneous/loudness";
+import { getIntegratedLoudness, getLoudnessRange, getShortTermLoudnessWithRange } from "../miscellaneous/loudness";
 import { AudioPlayerState } from "../player/audio-player";
 import LoadingSpinnerSmall from "./loading-spinner-small";
-import LoudnessGraphCanvas, { GRAPH_GREEN_LOUDNESS_RANGE, GRAPH_MINIMAL_LOUDNESS, LoudnessAndRange } from "./loudness-graph-canvas";
+import LoudnessGraphCanvas, { GRAPH_GREEN_LOUDNESS_RANGE, GRAPH_MINIMAL_LOUDNESS } from "./loudness-graph-canvas";
 
 export default function LoudnessGraph(props: {
     backend: BackendStore;
@@ -15,78 +14,70 @@ export default function LoudnessGraph(props: {
     const DEFAULT_LOUDNESS_WINDOW_SIZE_S = 1; // seconds
     const [shortTermLoudnessMapWindowSizeTarget, setShortTermLoudnessMapWindowSizeTarget] = createSignal(DEFAULT_LOUDNESS_WINDOW_SIZE_S);
 
-    // the loudnessState holds the calculation results for a specific asset
-    const [loudnessState, setLoudnessState] = createSignal<{
-        createdWith: {
-            assetID: string;
-            shortTermLoudnessMapWindowSize: number;
-        },
-        loudnessRange: number;
-        integrated: number;
-        shortTermLoudnessMap: LoudnessAndRange[];
-    }>({
-        createdWith: {
-            assetID: "",
-            shortTermLoudnessMapWindowSize: shortTermLoudnessMapWindowSizeTarget(),
-        },
-        loudnessRange: NaN,
-        integrated: NaN,
-        shortTermLoudnessMap: [],
-    });
-    function calculateLoudnessState(songBuffer: AudioBuffer, shortTermLoudnessMapWindowSize: number) {
-        let lra = loudnessRange(songBuffer);
-        setLoudnessState({
-            ...loudnessState(),
-            loudnessRange: lra,
-        });
+    // cache the current asset, i.e. the signal only triggers, if the value actually changed
+    const currentAsset = createMemo(() => props.audioState().assetID);
 
-        let integrated = integratedLoudness(songBuffer);
-        setLoudnessState({
-            ...loudnessState(),
-            integrated: integrated,
-        });
-
-        let stl = shortTermLoudnessWithRange(songBuffer, shortTermLoudnessMapWindowSize);
-        setLoudnessState({
-            ...loudnessState(),
-            shortTermLoudnessMap: stl,
-        });
-    }
-
-    // populate the songBuffer when the loaded asset changes
-    createEffect(async () => {
-        const creationParameters = {
-            assetID: props.audioState().assetID,
-            shortTermLoudnessMapWindowSize: shortTermLoudnessMapWindowSizeTarget(),
-        };
-        // only re-create if the buffer or shortTermLoudnessMapWindowSize changed
-        if (!deepEqual(creationParameters, loudnessState().createdWith)) {
-            const asset = props.backend.get(creationParameters.assetID);
-            if (asset) {
-                // reset values before analyzing the asset
-                setLoudnessState({
-                    createdWith: creationParameters,
-                    loudnessRange: NaN,
-                    integrated: NaN,
-                    shortTermLoudnessMap: [],
-                });
-
-                const audioBuffer = await getAudioBufferFromBlobWithEBUR128Filter(asset.file);
-                // re-calculate the loudnessState, if the songBuffer changes
-                calculateLoudnessState(audioBuffer, creationParameters.shortTermLoudnessMapWindowSize);
-            }
+    // the audioBuffer for the current asset
+    const [audioBufferForCurrentAsset] = createResource(currentAsset, async (newAsset: string) => {
+        const asset = props.backend.get(newAsset);
+        if (asset) {
+            return await getAudioBufferFromBlobWithEBUR128Filter(asset.file);
         }
     });
 
-    const integratedLoudnessBody = createMemo(() =>
-        Number.isNaN(loudnessState().integrated) ?
-            <LoadingSpinnerSmall /> : loudnessState().integrated.toFixed(1)
-    );
+    const loudnessRange = createMemo(() => {
+        if (audioBufferForCurrentAsset.loading) {
+            return "loading";
+        }
+        const audioBuffer = audioBufferForCurrentAsset();
+        if (audioBuffer) {
+            return getLoudnessRange(audioBuffer);
+        } else {
+            return NaN;
+        }
+    });
 
-    const loudnessRangeBody = createMemo(() =>
-        Number.isNaN(loudnessState().loudnessRange) ?
-            <LoadingSpinnerSmall /> : loudnessState().loudnessRange.toFixed(1)
-    );
+    const integratedLoudness = createMemo(() => {
+        if (audioBufferForCurrentAsset.loading) {
+            return "loading";
+        }
+        const audioBuffer = audioBufferForCurrentAsset();
+        if (audioBuffer) {
+            return getIntegratedLoudness(audioBuffer);
+        } else {
+            return NaN;
+        }
+    });
+
+    const shortTermLoudnessMap = createMemo(() => {
+        if (audioBufferForCurrentAsset.loading) {
+            return "loading";
+        }
+        const audioBuffer = audioBufferForCurrentAsset();
+        if (audioBuffer) {
+            return getShortTermLoudnessWithRange(audioBuffer, shortTermLoudnessMapWindowSizeTarget());
+        } else {
+            return [];
+        }
+    });
+
+    const integratedLoudnessBody = createMemo(() => {
+        const integratedLoudnessValue = integratedLoudness();
+        if (integratedLoudnessValue === "loading") {
+            return <LoadingSpinnerSmall />;
+        } else {
+            return <>{integratedLoudnessValue.toFixed(1)}</>;
+        }
+    });
+
+    const loudnessRangeBody = createMemo(() => {
+        const loudnessRangeValue = loudnessRange();
+        if (loudnessRangeValue === "loading") {
+            return <LoadingSpinnerSmall />;
+        } else {
+            return <>{loudnessRangeValue.toFixed(1)}</>;
+        }
+    });
 
     return (
         <div class="mb-0 mt-2">
@@ -116,7 +107,7 @@ export default function LoudnessGraph(props: {
                 </div>
             </div>
             <LoudnessGraphCanvas {...props}
-                loudnessFrames={loudnessState().shortTermLoudnessMap}
+                loudnessFrames={shortTermLoudnessMap()}
                 analysisWindowSizeS={shortTermLoudnessMapWindowSizeTarget} />
             <div>
                 <input type="range" min="0.1" max="3" step="0.1" value={shortTermLoudnessMapWindowSizeTarget()}

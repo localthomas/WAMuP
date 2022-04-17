@@ -10,9 +10,7 @@ import connectAudioEBUR128Prefilter from "../player/audio-ebur128-prefilter";
 export async function getAudioBufferFromBlobWithEBUR128Filter(data: Blob): Promise<AudioBuffer> {
     // use decodeAudioCtx only for decoding the audio data
     const decodeAudioCtx = new OfflineAudioContext(1, 1024, 44100);
-    console.time("TEST decode audio data");
     const buffer = await decodeAudioCtx.decodeAudioData(await data.arrayBuffer());
-    console.timeEnd("TEST decode audio data");
 
     // create a new audio context with the correct values from the decoded audio data
     const offlineAudio = new OfflineAudioContext(
@@ -26,10 +24,8 @@ export async function getAudioBufferFromBlobWithEBUR128Filter(data: Blob): Promi
     connectAudioEBUR128Prefilter(offlineAudio, bufferSource, offlineAudio.destination);
 
     // let the filter run and use the result to calculate values
-    console.time("TEST offline rendering");
     bufferSource.start();
     const resultBuffer = await offlineAudio.startRendering();
-    console.timeEnd("TEST offline rendering");
 
     return resultBuffer;
 }

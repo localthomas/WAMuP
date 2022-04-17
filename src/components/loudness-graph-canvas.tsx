@@ -6,13 +6,6 @@ export type LoudnessAndRange = {
     range: number; // LU (>= 0)
 }
 
-export type LoudnessGraphCanvasProps = {
-    loudnessFrames: LoudnessAndRange[];
-    analysisWindowSizeS: Accessor<number>;
-    audioState: Accessor<AudioPlayerState>;
-    onWantsToSeek: (to: number) => void;
-}
-
 export const GRAPH_MINIMAL_LOUDNESS = -35; // LUFS
 export const GRAPH_GREEN_LOUDNESS_RANGE = 6; // LU
 
@@ -22,7 +15,12 @@ export const GRAPH_GREEN_LOUDNESS_RANGE = 6; // LU
  * Red means a low loudness range (approaching 0) while green is greater than GRAPH_GREEN_LOUDNESS_RANGE [LU].
  * @param props the properties to use for displaying on the canvas
  */
-export default function LoudnessGraphCanvas(props: LoudnessGraphCanvasProps) {
+export default function LoudnessGraphCanvas(props: {
+    loudnessFrames: LoudnessAndRange[] | "loading";
+    analysisWindowSizeS: Accessor<number>;
+    audioState: Accessor<AudioPlayerState>;
+    onWantsToSeek: (to: number) => void;
+}) {
     let canvasRef: HTMLCanvasElement | undefined;
 
     function getMousePositionRelative(event: MouseEvent & {
@@ -42,6 +40,12 @@ export default function LoudnessGraphCanvas(props: LoudnessGraphCanvasProps) {
             console.warn("canvas could not be referenced in loudness-graph-canvas!");
             return;
         }
+        // break, if the loudnessFrames are still loading
+        if (props.loudnessFrames === "loading") {
+            // TODO: show a spinner instead of doing nothing!
+            return;
+        }
+
         const canvas = canvasRef;
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;

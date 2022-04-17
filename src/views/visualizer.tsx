@@ -11,12 +11,7 @@ export default function Visualizer(props: {
     backend: BackendStore;
     audioSession: AudioSession;
 }) {
-    const [audioState, setAudioState] = createSignal<AudioPlayerState>({
-        assetID: "",
-        isPlaying: false,
-        currentTime: 0,
-        duration: 0,
-    });
+    const [audioState, setAudioState] = createSignal<AudioPlayerState>(props.audioSession.getPlayerState());
     props.audioSession.addOnStateChangeListener((newState) => setAudioState(newState));
 
 

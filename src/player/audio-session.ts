@@ -171,6 +171,14 @@ export class AudioSession {
     }
 
     /**
+     * Get the current state of the audio player.
+     * @returns the current state
+     */
+    public getPlayerState(): AudioPlayerState {
+        return this.audioPlayer.getPlayerState();
+    }
+
+    /**
      * Get the analyser node of the underlying audio player.
      * @returns the analyser
      */
