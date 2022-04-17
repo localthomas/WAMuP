@@ -199,8 +199,6 @@ export type LoudnessOfAudioBufferWorkerInput = {
  * @param weighting the channel weighting used in the calculation
  */
 async function loudnessOfAudioBuffer(audio: AudioBuffer, frameSizeS: number, analysisWindowSizeS: number, weighting: (channel: number) => number): Promise<number[]> {
-    const TIME_NAME = "loudnessOfAudioBuffer-" + Math.random().toString(36).substring(2, 10);
-    console.time(TIME_NAME);
     // first convert the audio buffer into frames, to calculate values for each frame
     const frames = audioBufferIntoFrames(audio, frameSizeS, weighting);
 
@@ -210,8 +208,6 @@ async function loudnessOfAudioBuffer(audio: AudioBuffer, frameSizeS: number, ana
         analysisWindowSizeS,
     };
     const result = await runSingleWorker<LoudnessOfAudioBufferWorkerInput, number[]>(input, new URL("../workers/loudness.worker.ts", import.meta.url));
-
-    console.timeEnd(TIME_NAME);
     return result;
 }
 
