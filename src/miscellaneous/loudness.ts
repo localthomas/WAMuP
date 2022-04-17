@@ -1,12 +1,14 @@
 import { LoudnessAndRange } from "../components/loudness-graph-canvas";
+import { runSingleWorker } from "./concurrent";
+import { runMultipleWorkers } from "./parallel";
 
 /**
  * Analyzes the given audio data and calculates the loudness-range based on the algorithm presented in EBU Tech 3342.
  * Note: This function is not equal to the presented MatLab-Function "LoudnessRange". Instead it uses raw audio data.
  * @param audio the audioBuffer to analyze
  */
-export function getLoudnessRange(audio: AudioBuffer): number {
-    const shortLoudness = shortTermLoudness(audio);
+export async function getLoudnessRange(audio: AudioBuffer): Promise<number> {
+    const shortLoudness = await shortTermLoudness(audio);
 
     const ABS_THRESHOLD = -70; // LUFS (= absolute measure)
     const REL_THRESHOLD = -20; // LU   (= relative measure)
@@ -40,8 +42,8 @@ export function getLoudnessRange(audio: AudioBuffer): number {
  * Analyzes the given audio data and calculates the integrated loudness as per ITU-R BS.1770-4.
  * @param audio the audio buffer to analyze
  */
-export function getIntegratedLoudness(audio: AudioBuffer): number {
-    const frames = framesOf100ms(audio);
+export async function getIntegratedLoudness(audio: AudioBuffer): Promise<number> {
+    const frames = await framesOf100ms(audio);
 
     // filter the blocks as per ITU-R BS.1770-4 with 75% overlap (3 frames with 100ms frames)
     const numFramesOfOneGatingBlock = 4;
@@ -82,7 +84,7 @@ export function getIntegratedLoudness(audio: AudioBuffer): number {
  * Creates a list of short-term loudness values (3s window) of the raw audio data.
  * @param audio the audio buffer to use as raw audio source
  */
-function shortTermLoudness(audio: AudioBuffer): number[] {
+async function shortTermLoudness(audio: AudioBuffer): Promise<number[]> {
     // equals a sampling rate of short term loudness of 10Hz as per EBU Tech 3342
     const FRAME_SIZE_S = 0.1;
     // the length of the window in seconds to be used for calculating the short term loudness
@@ -103,11 +105,11 @@ function shortTermLoudness(audio: AudioBuffer): number[] {
  * @param audio the audio buffer to use as raw audio source
  * @param loudnessWindowSize the window-size in seconds of the loudness values
  */
-export function getShortTermLoudnessWithRange(audio: AudioBuffer, loudnessWindowSize: number): LoudnessAndRange[] {
+export async function getShortTermLoudnessWithRange(audio: AudioBuffer, loudnessWindowSize: number): Promise<LoudnessAndRange[]> {
     // use 30 100ms frames to calculate short term loudness
     const ANALYSIS_WINDOW_SIZE = 30;
 
-    const frames = framesOf100ms(audio);
+    const frames = await framesOf100ms(audio);
 
     let windows = [];
 
@@ -164,7 +166,7 @@ function loudnessOfWindow(window: number[]): number {
  * Suitable for further processing of integrated loudness; the returned values are not gated.
  * @param audio the audio buffer to use as raw audio source
  */
-function framesOf100ms(audio: AudioBuffer): number[] {
+async function framesOf100ms(audio: AudioBuffer): Promise<number[]> {
     // create 100ms blocks with loudness values by using the same values
     const FRAME_SIZE_S = 0.1;
     const ANALYSIS_WINDOW_SIZE_S = FRAME_SIZE_S;
@@ -172,6 +174,13 @@ function framesOf100ms(audio: AudioBuffer): number[] {
     const weighting = () => 1;
 
     return loudnessOfAudioBuffer(audio, FRAME_SIZE_S, ANALYSIS_WINDOW_SIZE_S, weighting);
+}
+
+/** A type as input for a worker calculating the loudness of an array of frames. */
+export type LoudnessOfAudioBufferWorkerInput = {
+    frames: Frame[];
+    frameSizeS: number;
+    analysisWindowSizeS: number;
 }
 
 /**
@@ -183,30 +192,25 @@ function framesOf100ms(audio: AudioBuffer): number[] {
  * @param analysisWindowSizeS the window size of the analyzed values in seconds
  * @param weighting the channel weighting used in the calculation
  */
-function loudnessOfAudioBuffer(audio: AudioBuffer, frameSizeS: number, analysisWindowSizeS: number, weighting: (channel: number) => number): number[] {
-    console.time("loudnessOfAudioBuffer")
+async function loudnessOfAudioBuffer(audio: AudioBuffer, frameSizeS: number, analysisWindowSizeS: number, weighting: (channel: number) => number): Promise<number[]> {
+    const TIME_NAME = "loudnessOfAudioBuffer-" + Math.random().toString(36).substring(2, 10);
+    console.time(TIME_NAME);
     // first convert the audio buffer into frames, to calculate values for each frame
     const frames = audioBufferIntoFrames(audio, frameSizeS, weighting);
 
-    /**
-     * The power per channel per frame.
-     * The first index selects the frame number, the second is the channel number.
-     */
-    const powers = frames.map(powersPerChannelOfFrame);
+    const input: LoudnessOfAudioBufferWorkerInput = {
+        frames,
+        frameSizeS,
+        analysisWindowSizeS,
+    };
+    const result = await runSingleWorker<LoudnessOfAudioBufferWorkerInput, number[]>(input, new URL("../workers/loudness.worker.ts", import.meta.url));
 
-    /**
-     * The list with all combined frame data per window.
-     * The first index is the window and the second the index of the frame within the window.
-     */
-    const analysisWindows = combineValuesIntoAnalysisWindows(powers, frameSizeS, analysisWindowSizeS);
-
-    /** a list of loudness values per analysis window */
-    const result = analysisWindows.map(loudnessOfAnalysisWindow);
-    console.timeEnd("loudnessOfAudioBuffer");
+    console.timeEnd(TIME_NAME);
     return result;
 }
 
-type Frame = {
+/** One frame holds PCM data for a specified amount of time. */
+export type Frame = {
     /**
      * The raw PCM data per channel.
      */
@@ -255,7 +259,8 @@ function audioBufferIntoFrames(audioBuffer: AudioBuffer, frameSizeS: number, wei
     return frames;
 }
 
-type PowerOfFrame = {
+/** The power values of one frame. */
+export type PowerOfFrame = {
     /**
      * The power values of each channel.
      */
@@ -271,7 +276,7 @@ type PowerOfFrame = {
  * @param frame the frame with audio data
  * @returns the power value per channel
  */
-function powersPerChannelOfFrame(frame: Frame): PowerOfFrame {
+export function powersPerChannelOfFrame(frame: Frame): PowerOfFrame {
     return {
         powers: frame.data.map(powerOfFrame),
         weights: frame.weights,
@@ -291,7 +296,7 @@ function powersPerChannelOfFrame(frame: Frame): PowerOfFrame {
  * @param analysisWindowSizeS the size of one window in seconds (should be greater than frame size)
  * @returns a list of lists where the first index is the analysis window and the second is the index of the value within this window
  */
-function combineValuesIntoAnalysisWindows<T>(frames: T[], frameSizeS: number, analysisWindowSizeS: number): T[][] {
+export function combineValuesIntoAnalysisWindows<T>(frames: T[], frameSizeS: number, analysisWindowSizeS: number): T[][] {
     /** the list of all windows; has the same length as the input parameter `frames` */
     let allWindows = [];
     for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
@@ -309,7 +314,7 @@ function combineValuesIntoAnalysisWindows<T>(frames: T[], frameSizeS: number, an
  * @param window the window with frames
  * @returns the loudness value of all power values of the window
  */
-function loudnessOfAnalysisWindow(window: PowerOfFrame[]): number {
+export function loudnessOfAnalysisWindow(window: PowerOfFrame[]): number {
     const numberOfChannels = window[0].powers.length;
     /**
      * a list of power values,

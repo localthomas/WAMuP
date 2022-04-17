@@ -1,8 +1,8 @@
 /**
  * Runs a single WebWorker and wraps this in an async function.
  *
- * The item needs to able to be a [transferable object](https://developer.mozilla.org/en-US/docs/Glossary/Transferable_objects),
- * as it is transferred to the worker and transferred back to the main thread after completion.
+ * The item needs to able to be an [object that can be cloned](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone),
+ * as it is cloned to the worker.
  *
  * Note that no type-checking is taking place, so the type parameters `T` and `S` are only for readability.
  * @param item the payload
@@ -35,7 +35,7 @@ export async function runSingleWorker<T, S>(item: T, scriptURL: URL): Promise<S>
     });
 
     // start work by posting the item to the worker
-    worker.postMessage(item, [(item as unknown) as Transferable]);
+    worker.postMessage(item);
 
     return promise;
 }

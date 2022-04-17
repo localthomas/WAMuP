@@ -4,7 +4,7 @@ import { getAudioBufferFromBlobWithEBUR128Filter } from "../miscellaneous/audio"
 import { getIntegratedLoudness, getLoudnessRange, getShortTermLoudnessWithRange } from "../miscellaneous/loudness";
 import { AudioPlayerState } from "../player/audio-player";
 import LoadingSpinnerSmall from "./loading-spinner-small";
-import LoudnessGraphCanvas, { GRAPH_GREEN_LOUDNESS_RANGE, GRAPH_MINIMAL_LOUDNESS } from "./loudness-graph-canvas";
+import LoudnessGraphCanvas, { GRAPH_GREEN_LOUDNESS_RANGE, GRAPH_MINIMAL_LOUDNESS, LoudnessAndRange } from "./loudness-graph-canvas";
 
 export default function LoudnessGraph(props: {
     backend: BackendStore;
@@ -32,35 +32,41 @@ export default function LoudnessGraph(props: {
         } else {
             const audioBuffer = audioBufferForCurrentAsset();
             if (audioBuffer) {
-                const result = getLoudnessRange(audioBuffer);
-                setLoudnessRange(result);
+                setLoudnessRange("loading");
+                setLoudnessRange(await getLoudnessRange(audioBuffer));
             } else {
                 setLoudnessRange(NaN);
             }
         }
     });
 
-    const integratedLoudness = createMemo(() => {
+    const [integratedLoudness, setIntegratedLoudness] = createSignal<number | "loading">(NaN);
+    createEffect(async () => {
         if (audioBufferForCurrentAsset.loading) {
-            return "loading";
-        }
-        const audioBuffer = audioBufferForCurrentAsset();
-        if (audioBuffer) {
-            return getIntegratedLoudness(audioBuffer);
+            setIntegratedLoudness("loading");
         } else {
-            return NaN;
+            const audioBuffer = audioBufferForCurrentAsset();
+            if (audioBuffer) {
+                setIntegratedLoudness("loading");
+                setIntegratedLoudness(await getIntegratedLoudness(audioBuffer));
+            } else {
+                setIntegratedLoudness(NaN);
+            }
         }
     });
 
-    const shortTermLoudnessMap = createMemo(() => {
+    const [shortTermLoudnessMap, setShortTermLoudnessMap] = createSignal<"loading" | LoudnessAndRange[]>([]);
+    createEffect(async () => {
         if (audioBufferForCurrentAsset.loading) {
-            return "loading";
-        }
-        const audioBuffer = audioBufferForCurrentAsset();
-        if (audioBuffer) {
-            return getShortTermLoudnessWithRange(audioBuffer, shortTermLoudnessMapWindowSizeTarget());
+            setShortTermLoudnessMap("loading");
         } else {
-            return [];
+            const audioBuffer = audioBufferForCurrentAsset();
+            if (audioBuffer) {
+                setShortTermLoudnessMap("loading");
+                setShortTermLoudnessMap(await getShortTermLoudnessWithRange(audioBuffer, shortTermLoudnessMapWindowSizeTarget()));
+            } else {
+                setShortTermLoudnessMap([]);
+            }
         }
     });
 

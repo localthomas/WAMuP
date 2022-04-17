@@ -11,8 +11,8 @@ const worker: Worker = self as any;
 export function registerSingleWorkerFunction<T, S>(func: (input: T) => S): void {
     // note: the worker should post messages of type ItemWithIndex
     // this is a typed function for easier checking
-    const postMessage = function (message: S, transferable: any[]): void {
-        worker.postMessage(message, transferable);
+    const postMessage = function (message: S): void {
+        worker.postMessage(message);
     };
 
     worker.addEventListener('message', async (message) => {
@@ -22,6 +22,6 @@ export function registerSingleWorkerFunction<T, S>(func: (input: T) => S): void 
         // call the worker function and post the result as message
         const result = await func(input);
 
-        postMessage(result, [input]);
+        postMessage(result);
     });
 }
