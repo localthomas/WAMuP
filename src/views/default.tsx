@@ -4,6 +4,8 @@ import Licenses from "../components/licenses";
 import Overview from "../components/overview";
 import SourceDirectoryPicker from "../components/source-dir-picker";
 
+import packageInfo from '../../package.json';
+
 export default function Default(props: {
     backendSignal: Signal<BackendState>
 }) {
@@ -28,6 +30,9 @@ export default function Default(props: {
                 <summary><b>Third Party Licenses</b></summary>
                 <Licenses />
             </details>
+            <p>
+                <small>Version: {packageInfo.version || <i>unknown</i>}</small>
+            </p>
         </>
     );
 }
