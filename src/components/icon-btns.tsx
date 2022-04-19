@@ -1,4 +1,4 @@
-//Icons used from Google Material Icons (<svg>) with Apache 2.0 License and changes to the size
+//Icons used from Google Material Icons (https://material.io/icons/) (<svg>) with Apache 2.0 License and changes to the size
 
 import { Component, JSX } from "solid-js";
 

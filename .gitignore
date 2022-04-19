@@ -1,5 +1,9 @@
+# auto generated data
 node_modules
 dist
 .parcel-cache
 *.tsbuildinfo
+licenses.json
+
+# IDE specific files
 .vscode
