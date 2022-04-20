@@ -1,25 +1,37 @@
 :root {
   --font-sans: Arial;
   --size-default: 0.25rem;
+  --background-color: black;
+  --text-color: #ededed;
   --primary-color: #89c402;
   /* The color that has the best contrast against the primary color. Usually white or black. */
   --primary-color-contrast: black;
 }
 
 body {
+  background-color: var(--background-color);
+  color: var(--text-color);
   font-family: var(--font-sans);
   hyphens: auto;
   text-align: justify;
   text-align-last: none;
+  text-rendering: optimizeLegibility;
 }
 
 button {
   border-radius: 9999px;
+  border-width: 0.1em;
+  border-style: solid;
   margin: var(--size-default);
   background-color: var(--primary-color);
   border-color: transparent;
   color: var(--primary-color-contrast);
   padding: var(--size-default) calc(var(--size-default) * 2);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 button.is-svg-btn {
@@ -34,9 +46,25 @@ button>svg {
   fill: var(--primary-color-contrast);
 }
 
+button.is-outlined {
+  background: transparent;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+button.is-outlined:hover {
+  background: var(--primary-color);
+  color: var(--primary-color-contrast);
+}
+
 button.is-outlined>svg {
   /* the svg icons on an outlined button should have the primary color, as there is no background */
   fill: var(--primary-color);
+}
+
+button.is-outlined:hover>svg {
+  /* the svg icons on an outlined button that is hovered should have a contrast color, as there is suddenly background */
+  fill: var(--primary-color-contrast);
 }
 
 button:enabled {
@@ -53,6 +81,14 @@ button.small {
 
 button.small>svg {
   fill: var(--primary-color);
+}
+
+a {
+  color: var(--text-color);
+}
+
+a:hover {
+  color: var(--primary-color);
 }
 
 /* custom styling for external links: add a symbol indicating that the page will open a new tab */
