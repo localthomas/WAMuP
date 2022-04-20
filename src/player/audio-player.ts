@@ -12,6 +12,9 @@ export type AudioPlayerState = {
  * `AudioPlayer` wraps multiple audio objects and provides unified access to the full audio setup.
  */
 export default class AudioPlayer {
+    /** the static instance of this class, as it is meant to be used as a singleton */
+    private static instance?: AudioPlayer;
+
     private audioSrc: HTMLAudioElement;
     private audioContext: AudioContext;
     private analyser: AnalyserNode;
@@ -20,14 +23,29 @@ export default class AudioPlayer {
     private onStateChangeListener: ((newState: AudioPlayerState, oldState: AudioPlayerState) => void)[] = [];
     private state: AudioPlayerState;
 
-    constructor() {
+    /**
+     * Get the current audio player instance.
+     * @returns the instance
+     */
+    public static getInstance(): AudioPlayer {
+        if (!this.instance) {
+            this.instance = new AudioPlayer();
+        }
+        return this.instance;
+    }
+
+    private constructor() {
         this.state = {
             assetID: "",
             currentTime: 0,
             duration: 0,
             isPlaying: false,
         };
+
+        // start the audio context in suspended state
         this.audioContext = new window.AudioContext;
+        this.audioContext.suspend();
+
         this.audioSrc = new Audio();
         this.audioSrc.onplay = this.onPlay.bind(this);
         this.audioSrc.onpause = this.onPause.bind(this);

@@ -10,14 +10,31 @@ import { ObservableQueue } from "./queue";
  * It also integrates with various browser APIs (if they are available), such as MediaSession, and sets the tab's title.
  */
 export class AudioSession {
+    /** the static instance of this class, as it is meant to be used as a singleton */
+    private static instance?: AudioSession;
+
     private audioPlayer: AudioPlayer;
     private playlist: ObservableQueue<string>;
     private backend: BackendStore;
     private onPlaylistListener: ((newPlaylist: string[]) => void)[] = [];
 
-    constructor(backend: BackendStore) {
+    /**
+     * Get the current instance of this audio session.
+     * Creates a new one, if none was created so far.
+     * @param backend the backend to use starting from now on
+     * @returns the instance
+     */
+    public static getInstance(backend: BackendStore): AudioSession {
+        if (!this.instance) {
+            this.instance = new AudioSession(backend);
+        }
+        this.instance.backend = backend
+        return this.instance;
+    }
+
+    private constructor(backend: BackendStore) {
         this.backend = backend;
-        this.audioPlayer = new AudioPlayer();
+        this.audioPlayer = AudioPlayer.getInstance();
         this.audioPlayer.addOnEndedListener(() => {
             // when a track has ended, play the next asset in the list
             this.nextTrack();

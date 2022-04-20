@@ -27,7 +27,7 @@ const App: Component = () => {
             return layoutWithLoadedBackend(
                 defaultComponent,
                 backend.store,
-                new AudioSession(backend.store)
+                AudioSession.getInstance(backend.store),
             );
         } else {
             return defaultComponent;
