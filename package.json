@@ -23,7 +23,6 @@
   "dependencies": {
     "murmur-32": "^1.0.0",
     "music-metadata-browser": "^2.5.5",
-    "pollen-css": "^4.3.0",
     "solid-app-router": "^0.3.2",
     "solid-js": "^1.3.12"
   }

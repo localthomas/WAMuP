@@ -1,5 +1,9 @@
 :root {
+  --font-sans: Arial;
   --size-default: 0.25rem;
+  --primary-color: #89c402;
+  /* The color that has the best contrast against the primary color. Usually white or black. */
+  --primary-color-contrast: black;
 }
 
 body {
@@ -10,8 +14,29 @@ body {
 }
 
 button {
-  border-radius: var(--radius-md);
+  border-radius: 9999px;
   margin: var(--size-default);
+  background-color: var(--primary-color);
+  border-color: transparent;
+  color: var(--primary-color-contrast);
+  padding: var(--size-default) calc(var(--size-default) * 2);
+}
+
+button.is-svg-btn {
+  /* note that there is no text in such a button, so remove line spacing */
+  line-height: 0;
+  /* make the button into the same aspect ratio as the icon, by using one uniform padding */
+  padding: var(--size-default);
+}
+
+button>svg {
+  /* the svg icons should have the proper contrast color against the primary color, when it is a default button */
+  fill: var(--primary-color-contrast);
+}
+
+button.is-outlined>svg {
+  /* the svg icons on an outlined button should have the primary color, as there is no background */
+  fill: var(--primary-color);
 }
 
 button:enabled {
@@ -22,6 +47,12 @@ button.small {
   background: none;
   border: none;
   padding: 0;
+  /* as there is no background, use primary color */
+  color: var(--primary-color);
+}
+
+button.small>svg {
+  fill: var(--primary-color);
 }
 
 /* custom styling for external links: add a symbol indicating that the page will open a new tab */
