@@ -1,20 +1,15 @@
 import { NavLink } from "solid-app-router";
-import { createMemo, createSignal } from "solid-js";
+import { createMemo } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import { Metadata } from "../backend/metadata";
-import { AudioSession } from "../player/audio-session";
+import { ReactiveAudioSession } from "../player/reactive-audio-session";
 import { AudioControls } from "./audio-controls";
 import { CrossBtn } from "./icon-btns";
 
 export default function PlayerBar(props: {
     backend: BackendStore;
-    audioSession: AudioSession;
+    audioSession: ReactiveAudioSession;
 }) {
-    const [queue, setQueue] = createSignal<string[]>([]);
-    props.audioSession.addPlaylistListener((newQueue) => {
-        setQueue(newQueue);
-    });
-
     type MetadataWithPlaylistIndex = {
         metadata: Metadata;
         index: number;
@@ -23,7 +18,7 @@ export default function PlayerBar(props: {
     /** The maximum amount of items of the future playlist including the current playing asset. */
     const maxDisplayedPlaylist = 3;
     const playlistSnippet = createMemo(() => {
-        return queue()
+        return props.audioSession.getQueue()()
             // get the first x elements of the playlist
             .slice(0, maxDisplayedPlaylist)
             // instead of plain asset IDs, map these to their corresponding metadata
@@ -38,7 +33,7 @@ export default function PlayerBar(props: {
             .reverse();
     });
 
-    const playlistLength = createMemo(() => queue().length);
+    const playlistLength = createMemo(() => props.audioSession.getQueue()().length);
 
     return (
         <div class="player has-text-centered mt-4">

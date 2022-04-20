@@ -19,8 +19,13 @@ export default class AudioPlayer {
     private audioContext: AudioContext;
     private analyser: AnalyserNode;
     readonly ebur128analyser: AudioEBUR128;
-    private onEndedListener: (() => void)[] = [];
-    private onStateChangeListener: ((newState: AudioPlayerState, oldState: AudioPlayerState) => void)[] = [];
+    /** Listener that is fired when the current asset was played to its completion. */
+    public onEndedListener?: () => void;
+    /**
+     * Listener that is fired as soon as the internal player state changed.
+     * Includes the new state as the first parameter and the previous state (before the change) as the second parameter.
+     */
+    public onStateChangeListener?: (newState: AudioPlayerState, oldState: AudioPlayerState) => void;
     private state: AudioPlayerState;
 
     /**
@@ -147,9 +152,9 @@ export default class AudioPlayer {
     private changeState(newState: AudioPlayerState) {
         const oldState = this.state;
         this.state = newState;
-        this.onStateChangeListener.forEach(listener => {
-            listener(newState, oldState);
-        });
+        if (this.onStateChangeListener) {
+            this.onStateChangeListener(newState, oldState);
+        }
     }
 
     private onPlay() {
@@ -183,28 +188,12 @@ export default class AudioPlayer {
     }
 
     private onEnded() {
-        this.onEndedListener.forEach(listener => {
-            listener();
-        });
+        if (this.onEndedListener) {
+            this.onEndedListener();
+        }
     }
 
     private setPlaying(play: boolean) {
         play ? this.audioSrc.play() : this.audioSrc.pause();
-    }
-
-    removeStateChangeListener(listener: (newState: AudioPlayerState, oldState: AudioPlayerState) => void) {
-        this.onStateChangeListener = this.onStateChangeListener.filter(l => l !== listener);
-    }
-
-    addOnStateChangeListener(listener: (newState: AudioPlayerState, oldState: AudioPlayerState) => void) {
-        this.onStateChangeListener.push(listener);
-    }
-
-    removeEndedListener(listener: () => void) {
-        this.onEndedListener = this.onEndedListener.filter(l => l !== listener);
-    }
-
-    addOnEndedListener(listener: () => void) {
-        this.onEndedListener.push(listener);
     }
 }

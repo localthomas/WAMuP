@@ -1,5 +1,5 @@
 import { createEffect, createSignal, onCleanup } from "solid-js";
-import { AudioSession } from "../player/audio-session";
+import { ReactiveAudioSession } from "../player/reactive-audio-session";
 import { MinusBtn, PlusBtn } from "./icon-btns";
 
 const MAX_FREQ = 18000;
@@ -8,7 +8,7 @@ const MAX_FFT_SIZE = 32768;
 const MIN_FFT_SIZE = 32;
 
 export default function Spectrum(props: {
-    audioSession: AudioSession;
+    audioSession: ReactiveAudioSession;
 }) {
     let canvasRef: HTMLCanvasElement | undefined = undefined;
     const [smoothing, setSmoothing] = createSignal(DEFAULT_SMOOTHING);

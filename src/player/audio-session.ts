@@ -16,7 +16,13 @@ export class AudioSession {
     private audioPlayer: AudioPlayer;
     private playlist: ObservableQueue<string>;
     private backend: BackendStore;
-    private onPlaylistListener: ((newPlaylist: string[]) => void)[] = [];
+    /** Listener that is called with a new playlist, as soon as the playlist was changed. */
+    public onPlaylistListener?: (newPlaylist: string[]) => void;
+    /**
+     * Listener that is fired as soon as the internal player state changed.
+     * Includes the new state as the first parameter and the previous state (before the change) as the second parameter.
+     */
+    public onStateChangeListener?: (newState: AudioPlayerState, oldState: AudioPlayerState) => void;
 
     /**
      * Get the current instance of this audio session.
@@ -35,10 +41,10 @@ export class AudioSession {
     private constructor(backend: BackendStore) {
         this.backend = backend;
         this.audioPlayer = AudioPlayer.getInstance();
-        this.audioPlayer.addOnEndedListener(() => {
+        this.audioPlayer.onEndedListener = () => {
             // when a track has ended, play the next asset in the list
             this.nextTrack();
-        });
+        };
         this.playlist = new ObservableQueue(this.onPlaylistChange.bind(this));
 
         // keyboard shortcuts
@@ -84,7 +90,7 @@ export class AudioSession {
         });
 
         // setup for listening to changes of the audio player
-        this.audioPlayer.addOnStateChangeListener(this.onAudioPlayerStateChange.bind(this));
+        this.audioPlayer.onStateChangeListener = this.onAudioPlayerStateChange.bind(this);
 
         console.debug("initialized AudioSession");
     }
@@ -110,7 +116,9 @@ export class AudioSession {
         }
 
         // notify all listeners of the changed queue
-        this.onPlaylistListener.forEach(listener => listener(playlist));
+        if (this.onPlaylistListener) {
+            this.onPlaylistListener(playlist);
+        }
     }
 
     /**
@@ -135,6 +143,11 @@ export class AudioSession {
             } else {
                 document.title = "BBAP";
             }
+        }
+
+        // pass event through to new listener if desired
+        if (this.onStateChangeListener) {
+            this.onStateChangeListener(newState, oldState);
         }
     }
 
@@ -222,37 +235,5 @@ export class AudioSession {
      */
     public getSampleRate(): number {
         return this.audioPlayer.getSampleRate();
-    }
-
-    /**
-     * Remove a state change listener.
-     * @param listener the listener to remove
-     */
-    removeStateChangeListener(listener: (newState: AudioPlayerState) => void) {
-        this.audioPlayer.removeStateChangeListener(listener);
-    }
-
-    /**
-     * Add a listener that reacts to audio state changes.
-     * @param listener the listener to add
-     */
-    addOnStateChangeListener(listener: (newState: AudioPlayerState) => void) {
-        this.audioPlayer.addOnStateChangeListener(listener);
-    }
-
-    /**
-     * Remove a listener that listens for playlist changes.
-     * @param listener the listener to remove
-     */
-    removePlaylistListener(listener: (newPlaylist: string[]) => void) {
-        this.onPlaylistListener = this.onPlaylistListener.filter(l => l !== listener);
-    }
-
-    /**
-     * Add a listener that is called on changes to the playlist.
-     * @param listener the listener to add
-     */
-    addPlaylistListener(listener: (newPlaylist: string[]) => void) {
-        this.onPlaylistListener.push(listener);
     }
 }

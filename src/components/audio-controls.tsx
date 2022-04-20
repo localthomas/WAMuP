@@ -1,15 +1,11 @@
 import { createMemo, createSignal } from "solid-js";
 import { secondsToString } from "../miscellaneous/time-conversion";
-import { AudioPlayerState } from "../player/audio-player";
-import { AudioSession } from "../player/audio-session";
+import { ReactiveAudioSession } from "../player/reactive-audio-session";
 import { NextTrackBtn, PauseBtn, PlayBtn, StopBtn } from "./icon-btns";
 
 export function AudioControls(props: {
-    audioSession: AudioSession;
+    audioSession: ReactiveAudioSession;
 }) {
-    const [audioState, setAudioState] = createSignal<AudioPlayerState>(props.audioSession.getPlayerState());
-    props.audioSession.addOnStateChangeListener((newState) => setAudioState(newState));
-
     const setPlaying = (play: boolean) => {
         props.audioSession.setNewPlayerState({
             isPlaying: play
@@ -29,11 +25,11 @@ export function AudioControls(props: {
         });
     }
 
-    const disabled = createMemo(() => audioState().assetID !== "" ? false : true);
+    const disabled = createMemo(() => props.audioSession.getAudioState()().assetID !== "" ? false : true);
 
     return (
         <div class="columns is-vcentered">
-            {audioState().isPlaying ?
+            {props.audioSession.getAudioState()().isPlaying ?
                 <PauseBtn disabled={disabled()}
                     onClick={() => {
                         setPlaying(false);
@@ -48,7 +44,7 @@ export function AudioControls(props: {
                 onClick={() => {
                     stop();
                 }} />
-            <progress class="time-slider mx-2" max={audioState().duration} value={audioState().currentTime}
+            <progress class="time-slider mx-2" max={props.audioSession.getAudioState()().duration} value={props.audioSession.getAudioState()().currentTime}
                 onClick={(event: any) => {
                     // calculate the relative x position of the users click to the progress-bar
                     const offset = getGlobalOffsetLeft(event.target);
@@ -57,7 +53,7 @@ export function AudioControls(props: {
                     seek(clickedValue);
                 }}></progress>
             <div style={{ "whiteSpace": "nowrap" }} class="mr-2">
-                {secondsToString(audioState().currentTime)} / {secondsToString(audioState().duration)}
+                {secondsToString(props.audioSession.getAudioState()().currentTime)} / {secondsToString(props.audioSession.getAudioState()().duration)}
             </div>
             <NextTrackBtn disabled={disabled()}
                 onClick={() => {

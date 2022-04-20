@@ -1,9 +1,9 @@
 import { createSignal } from "solid-js";
-import { AudioSession } from "../player/audio-session";
+import { ReactiveAudioSession } from "../player/reactive-audio-session";
 import DbScale from "./db-scale";
 
 export default function EBUR128Meter(props: {
-    audioSession: AudioSession;
+    audioSession: ReactiveAudioSession;
 }) {
     const [momentary, setMomentary] = createSignal(0);
     const [shortTerm, setShortTerm] = createSignal(0);

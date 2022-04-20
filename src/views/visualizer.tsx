@@ -1,25 +1,19 @@
-import { createSignal } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import { AssetDetailed } from "../components/asset-detailed";
 import EBUR128Meter from "../components/ebu-r128-meter";
 import LoudnessGraph from "../components/loudness-graph";
 import Spectrum from "../components/spectrum";
-import { AudioPlayerState } from "../player/audio-player";
-import { AudioSession } from "../player/audio-session";
+import { ReactiveAudioSession } from "../player/reactive-audio-session";
 
 export default function Visualizer(props: {
     backend: BackendStore;
-    audioSession: AudioSession;
+    audioSession: ReactiveAudioSession;
 }) {
-    const [audioState, setAudioState] = createSignal<AudioPlayerState>(props.audioSession.getPlayerState());
-    props.audioSession.addOnStateChangeListener((newState) => setAudioState(newState));
-
-
     return (
         <div class="container">
-            {audioState().assetID ?
+            {props.audioSession.getAudioState()().assetID ?
                 <div>
-                    <AssetDetailed backend={props.backend} assetID={audioState().assetID} />
+                    <AssetDetailed backend={props.backend} assetID={props.audioSession.getAudioState()().assetID} />
                     <hr />
                 </div>
                 :
@@ -31,7 +25,7 @@ export default function Visualizer(props: {
             <EBUR128Meter audioSession={props.audioSession} />
             <LoudnessGraph
                 backend={props.backend}
-                audioState={audioState}
+                audioState={props.audioSession.getAudioState()}
                 onWantsToSeek={(newTime) => {
                     props.audioSession.setNewPlayerState({ currentTime: newTime });
                 }} />

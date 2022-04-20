@@ -11,8 +11,7 @@ import Asset from '../views/asset';
 import Queue from '../views/queue';
 import Visualizer from '../views/visualizer';
 import PlayerBar from './player-bar';
-import { AudioPlayerState } from '../player/audio-player';
-import { AudioSession } from '../player/audio-session';
+import { ReactiveAudioSession } from '../player/reactive-audio-session';
 
 const App: Component = () => {
     const [backendState, setBackendState] = createSignal<BackendState>({ tag: "None" });
@@ -27,7 +26,7 @@ const App: Component = () => {
             return layoutWithLoadedBackend(
                 defaultComponent,
                 backend.store,
-                AudioSession.getInstance(backend.store),
+                ReactiveAudioSession.getInstance(backend.store),
             );
         } else {
             return defaultComponent;
@@ -40,15 +39,7 @@ const App: Component = () => {
 export default App;
 
 
-function layoutWithLoadedBackend(defaultComponent: JSX.Element, backendStore: BackendStore, audioSession: AudioSession): JSX.Element {
-    const [queue, setQueue] = createSignal<string[]>([]);
-    audioSession.addPlaylistListener((newQueue) => {
-        setQueue(newQueue);
-    });
-
-    const [audioState, setAudioState] = createSignal<AudioPlayerState>(audioSession.getPlayerState());
-    audioSession.addOnStateChangeListener((newState) => setAudioState(newState));
-
+function layoutWithLoadedBackend(defaultComponent: JSX.Element, backendStore: BackendStore, audioSession: ReactiveAudioSession): JSX.Element {
     // page setup, if a fully loaded backend is available
 
     // Note: if adding methods of `audioSession` as callbacks, use `.bind(audioSession)` so that `this` is well defined
@@ -66,7 +57,7 @@ function layoutWithLoadedBackend(defaultComponent: JSX.Element, backendStore: Ba
                 <Route path="/queue" element={
                     <Queue
                         backend={backendStore}
-                        playlist={queue()}
+                        playlist={audioSession.getQueue()()}
                         onRemoveFromPlaylist={audioSession.removeFromPlaylist.bind(audioSession)}
                         onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
                     />}
@@ -87,7 +78,7 @@ function layoutWithLoadedBackend(defaultComponent: JSX.Element, backendStore: Ba
                     <Album
                         backend={backendStore}
                         onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
-                        currentAsset={audioState().assetID}
+                        currentAsset={audioSession.getAudioState()().assetID}
                         onPlayNow={audioSession.playNow.bind(audioSession)}
                         onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
                     />}
@@ -100,7 +91,7 @@ function layoutWithLoadedBackend(defaultComponent: JSX.Element, backendStore: Ba
                 <Route path="/artists/:id" element={
                     <Artist
                         backend={backendStore}
-                        currentAsset={audioState().assetID}
+                        currentAsset={audioSession.getAudioState()().assetID}
                         onPlayNow={audioSession.playNow.bind(audioSession)}
                         onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
                     />}
