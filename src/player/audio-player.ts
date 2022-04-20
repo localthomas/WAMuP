@@ -1,4 +1,4 @@
-import { BackendStore } from "../backend/backend";
+import { AssetWithID } from "../backend/backend";
 import AudioEBUR128 from "./audio-ebur128";
 
 export type AudioPlayerState = {
@@ -12,7 +12,6 @@ export type AudioPlayerState = {
  * `AudioPlayer` wraps multiple audio objects and provides unified access to the full audio setup.
  */
 export default class AudioPlayer {
-    private backend: BackendStore;
     private audioSrc: HTMLAudioElement;
     private audioContext: AudioContext;
     private analyser: AnalyserNode;
@@ -21,8 +20,7 @@ export default class AudioPlayer {
     private onStateChangeListener: ((newState: AudioPlayerState, oldState: AudioPlayerState) => void)[] = [];
     private state: AudioPlayerState;
 
-    constructor(backend: BackendStore) {
-        this.backend = backend;
+    constructor() {
         this.state = {
             assetID: "",
             currentTime: 0,
@@ -49,10 +47,10 @@ export default class AudioPlayer {
      * Load a new asst displacing the currently loaded one immediately.
      * @param newAsset the new asset's ID
      */
-    private async changeSource(newAsset: string) {
-        if (newAsset !== this.state.assetID) {
+    private async changeSource(newAsset: AssetWithID) {
+        if (newAsset.id !== this.state.assetID) {
             // reload audio src when the asset changed
-            const audioData = this.backend.mustGet(newAsset).file;
+            const audioData = newAsset.asset.file;
             const audioDataSrcURL = URL.createObjectURL(audioData);
             // delete the previous audio data that might still be loaded, before setting a new source
             URL.revokeObjectURL(this.audioSrc.src);
@@ -62,7 +60,7 @@ export default class AudioPlayer {
             console.debug("reloaded player with", newAsset);
             this.changeState({
                 ...this.state,
-                assetID: newAsset,
+                assetID: newAsset.id,
             });
         }
     }
@@ -73,15 +71,15 @@ export default class AudioPlayer {
      * @param newStateFunc a function that generates the new state values
      */
     public setNewPlayerState(newStateFunc: (currentState: AudioPlayerState) => {
-        assetID?: string;
+        newAsset?: AssetWithID;
         isPlaying?: boolean;
         currentTime?: number;
     }) {
         const newState = newStateFunc(this.state);
 
         // Note: apply the playing state and seeking after loading a potentially new asset.
-        if (newState.assetID !== undefined) {
-            this.changeSource(newState.assetID);
+        if (newState.newAsset !== undefined) {
+            this.changeSource(newState.newAsset);
         }
         if (newState.isPlaying !== undefined) {
             this.setPlaying(newState.isPlaying);

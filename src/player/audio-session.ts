@@ -17,7 +17,7 @@ export class AudioSession {
 
     constructor(backend: BackendStore) {
         this.backend = backend;
-        this.audioPlayer = new AudioPlayer(backend);
+        this.audioPlayer = new AudioPlayer();
         this.audioPlayer.addOnEndedListener(() => {
             // when a track has ended, play the next asset in the list
             this.nextTrack();
@@ -78,11 +78,15 @@ export class AudioSession {
      */
     private onPlaylistChange(playlist: string[]) {
         // if the playlist changed, set a new asset for the player
-        const newAsset = playlist[0];
+        const newAssetID = playlist[0];
+        const newAsset = this.backend.get(newAssetID);
         if (newAsset) {
             this.audioPlayer.setNewPlayerState(() => {
                 return {
-                    assetID: newAsset,
+                    newAsset: {
+                        id: newAssetID,
+                        asset: newAsset,
+                    },
                     isPlaying: true,
                 };
             });
