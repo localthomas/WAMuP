@@ -4,10 +4,11 @@
   "description": "Browser Based Audio Player",
   "source": "src/index.html",
   "scripts": {
+    "get-commit-hash": "printf \"GIT_COMMIT_HASH=%s\n\" \"$(git describe --always --broken --dirty --abbrev=128 --long)\" > .env.local",
     "licenses": "npx license-checker-rseidelsohn --customPath licenses-format.json --json --out licenses.json",
-    "dev": "npm run licenses && npx parcel",
+    "dev": "npm run licenses && npm run get-commit-hash && npx parcel",
     "check": "npx tsc --noEmit",
-    "build": "npm run licenses && npx parcel build"
+    "build": "npm run licenses && npm run get-commit-hash && npx parcel build"
   },
   "license": "MIT",
   "devDependencies": {

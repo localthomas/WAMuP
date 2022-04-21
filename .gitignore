@@ -7,3 +7,6 @@ licenses.json
 
 # IDE specific files
 .vscode
+
+# local configuration for environment variables
+.env.*local

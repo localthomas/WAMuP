@@ -11,6 +11,8 @@ export default function Default(props: {
 }) {
     const [backend, setBackend] = props.backendSignal;
 
+    console.log("TEST", process.env.GIT_COMMIT_HASH);
+
     return (
         <div class="container">
             <h1>BBAP</h1>
@@ -32,6 +34,8 @@ export default function Default(props: {
             </details>
             <p>
                 <small>Version: {packageInfo.version || <i>unknown</i>}</small>
+                <br />
+                <small>Git commit: {process.env.GIT_COMMIT_HASH || <i>unknown</i>}</small>
             </p>
         </div>
     );
