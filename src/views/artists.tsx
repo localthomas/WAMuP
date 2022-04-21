@@ -18,7 +18,7 @@ export default function Artists(props: {
         return list;
     });
     return (
-        <div>
+        <div class="container">
             <table>
                 <thead>
                     <tr>

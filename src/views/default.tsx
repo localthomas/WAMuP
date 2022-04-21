@@ -12,7 +12,7 @@ export default function Default(props: {
     const [backend, setBackend] = props.backendSignal;
 
     return (
-        <>
+        <div class="container">
             <h1>BBAP</h1>
             <Overview backend={backend}></Overview>
             <h2>Usage</h2>
@@ -33,6 +33,6 @@ export default function Default(props: {
             <p>
                 <small>Version: {packageInfo.version || <i>unknown</i>}</small>
             </p>
-        </>
+        </div>
     );
 }

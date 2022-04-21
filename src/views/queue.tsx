@@ -24,7 +24,7 @@ export default function Queue(props: {
 
     const id: string = props.playlist[0];
     return (
-        <>
+        <div class="container">
             <AssetDetailed backend={props.backend} assetID={id}>
                 <button class="button is-primary is-outlined is-rounded"
                     disabled={props.playlist.length <= 1}
@@ -80,6 +80,6 @@ export default function Queue(props: {
                     })}
                 </tbody>
             </table>
-        </>
+        </div>
     );
 }

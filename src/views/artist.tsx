@@ -13,12 +13,12 @@ export default function Artist(props: {
     const assets = processArtist(props.backend, artist);
 
     return (
-        <>
+        <div class="container">
             <h1 class="title">{artist}</h1>
             <TitleList titles={assets} sortFn={undefined}
                 ignoreList={new Set(["No", "Artist"])}
                 {...props} />
-        </>
+        </div>
     );
 }
 

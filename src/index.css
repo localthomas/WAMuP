@@ -19,6 +19,14 @@ body {
 }
 
 /*
+--- Layout ---
+*/
+
+.container {
+  max-width: 75rem;
+}
+
+/*
 --- Button ---
 */
 
