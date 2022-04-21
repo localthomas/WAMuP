@@ -18,6 +18,10 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/*
+--- Button ---
+*/
+
 button {
   border-radius: 9999px;
   border-width: 0.1em;
@@ -83,6 +87,10 @@ button.small>svg {
   fill: var(--primary-color);
 }
 
+/*
+--- Anchor ---
+*/
+
 a {
   color: var(--text-color);
 }
@@ -103,4 +111,63 @@ a[target=_blank]::after {
   background-position: center;
   background-repeat: no-repeat;
   display: inline-block;
+}
+
+/*
+--- Input ---
+*/
+
+input {
+  background-color: transparent;
+  border: 0.1em solid var(--text-color);
+  color: var(--text-color);
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  border: none;
+  margin: 1em var(--size-default);
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  background-color: gray;
+  border-radius: 9999px;
+  height: var(--size-default);
+  cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  border: none;
+  height: calc(var(--size-default) * 4);
+  width: calc(var(--size-default) * 4);
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  cursor: pointer;
+  margin-top: calc(-1.5 * var(--size-default));
+}
+
+/*
+--- Details ---
+*/
+
+details>summary {
+  text-decoration: underline;
+}
+
+details>summary:hover {
+  cursor: pointer;
+}
+
+/*
+--- HR ---
+*/
+
+hr {
+  background-color: var(--text-color);
+  opacity: 0.25;
+  border: none;
+  display: block;
+  height: 2px;
+  margin: 1.5rem 0;
 }
