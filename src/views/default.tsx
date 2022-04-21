@@ -24,9 +24,9 @@ export default function Default(props: {
             </p>
             <SourceDirectoryPicker backendStateSignal={[backend, setBackend]} />
             <p>
-                Generally everything that is either <span class="TODO">underlined</span> or <span class="TODO">colored in the accent color</span> is an interactive object.
-                The state of the application is only stored in this browser tab, so other tabs do not have the same audio player or used the same folder for analysis.
-                Note that reloading the current page clears the curren tab, so all state, including the playlist, is lost.
+                Generally everything that is either <span style={{ "text-decoration": "underline" }}>underlined</span> or <span style={{ "color": "var(--primary-color)" }}>colored in the accent color</span> is an interactive object.
+                The state of the application is only stored in this browser tab, so other tabs do not have the same audio player or use the same folder for analysis.
+                Note that reloading the current page clears the current tab, so all state—including the playlist—is lost.
             </p>
             <details>
                 <summary><b>Third Party Licenses</b></summary>
