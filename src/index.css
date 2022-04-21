@@ -9,6 +9,7 @@
 }
 
 body {
+  margin: 0;
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: var(--font-sans);
@@ -24,6 +25,49 @@ body {
 
 .container {
   max-width: 75rem;
+  margin: 0 auto;
+}
+
+/*
+--- Navbar ---
+*/
+
+nav {
+  /* calc a custom border color for navbar */
+  --navbar-border-color: gray;
+  --navbar-border-size: 0.1rem;
+  align-items: center;
+  justify-content: center;
+  position: sticky;
+  display: flex;
+  top: 0;
+  z-index: 1;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(2rem);
+  border-bottom-color: var(--navbar-border-color);
+  border-bottom-style: solid;
+  border-bottom-width: var(--navbar-border-size);
+}
+
+nav>a {
+  display: flex;
+  padding: calc(var(--size-default) * 2) calc(var(--size-default) * 4);
+  text-decoration: none;
+  border-radius: 0.5rem 0.5rem 0 0;
+  border: var(--navbar-border-size) solid transparent;
+}
+
+nav>a:hover {
+  background-color: var(--navbar-border-color);
+  border-color: var(--navbar-border-color);
+}
+
+nav>a.active {
+  color: var(--primary-color);
+  background-color: var(--background-color);
+  border-color: var(--navbar-border-color);
+  margin-bottom: calc(-2 * var(--navbar-border-size));
+  border-bottom-color: var(--background-color) !important;
 }
 
 /*
