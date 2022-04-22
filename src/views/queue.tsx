@@ -23,10 +23,11 @@ export default function Queue(props: {
     }
 
     const id: string = props.playlist[0];
+    // TODO: replace table below with customized title-list
     return (
         <div class="container">
             <AssetDetailed backend={props.backend} assetID={id}>
-                <button class="button is-primary is-outlined is-rounded"
+                <button class="is-outlined"
                     disabled={props.playlist.length <= 1}
                     onClick={() => {
                         props.onReplacePlaylist([props.playlist[0]])
@@ -34,7 +35,7 @@ export default function Queue(props: {
                     Clear Queue
                 </button>
             </AssetDetailed>
-            <table class="table is-striped is-fullwidth is-hoverable">
+            <table class="is-striped">
                 <thead>
                     <tr>
                         <th></th>
@@ -66,7 +67,7 @@ export default function Queue(props: {
                                         {asset.meta.artist}
                                     </NavLink>
                                 </td>
-                                <td class="action-column has-text-right">
+                                <td class="fixed-width">
                                     <div>
                                         <CrossBtn
                                             small

@@ -8,6 +8,9 @@
   --primary-color-contrast: black;
   --blur-strength: 2rem;
   --blur-background-color: rgba(0, 0, 0, 0.75);
+  --table-grid-color: #4f4f4f;
+  --table-grid-width: 0.05rem;
+  --table-striped-color: rgba(255, 255, 255, 0.1);
 }
 
 body {
@@ -98,6 +101,10 @@ footer {
   backdrop-filter: blur(var(--blur-strength));
 }
 
+footer p {
+  text-align: center;
+}
+
 .audio-controls {
   display: flex;
   align-items: center;
@@ -113,6 +120,72 @@ footer {
 .audio-controls>.time-display {
   white-space: nowrap;
   margin: 0rem var(--size-default);
+}
+
+/*
+--- Table ---
+*/
+
+/* --- Asset Detailed Table --- */
+
+table.asset-detailed {
+  width: max-content;
+  max-width: 100%;
+}
+
+/* the first column should not wrap, as it contains no dynamic content */
+table.asset-detailed td:first-child {
+  white-space: nowrap;
+}
+
+/* --- Normal Table --- */
+
+table {
+  width: calc(100% - calc(var(--size-default) * 2));
+  margin: var(--size-default);
+  border-collapse: collapse;
+  text-align: left;
+}
+
+table td {
+  vertical-align: middle;
+}
+
+/* border of header row of table is stronger than the other lines */
+table>thead>tr {
+  border-bottom-style: solid;
+  border-bottom-width: calc(var(--table-grid-width) * 2);
+  border-bottom-color: var(--table-grid-color);
+}
+
+/* default padding for all cells in a table */
+table th,
+table td {
+  padding: calc(var(--size-default) * 2) calc(var(--size-default) * 1);
+}
+
+/* stripes on each second row of a table */
+table.is-striped tbody tr:not(.is-selected):nth-child(2n) {
+  background-color: var(--table-striped-color);
+}
+
+/* special setup for the last column of tables, as these always contain svg-buttons */
+table td.fixed-width {
+  padding: 0;
+  white-space: nowrap;
+  /* should be as small as possible */
+  width: 0;
+}
+
+/* border styling should only affect each element before last, as it draws a line between them */
+table tr:not(:last-child) {
+  border-bottom-style: solid;
+  border-bottom-width: var(--table-grid-width);
+  border-bottom-color: var(--table-grid-color);
+}
+
+tr.active-row * {
+  color: var(--primary-color);
 }
 
 /*
@@ -267,4 +340,12 @@ hr {
   display: block;
   height: 2px;
   margin: 1.5rem 0;
+}
+
+/*
+--- Misc ---
+*/
+
+.hidden {
+  visibility: hidden;
 }

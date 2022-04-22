@@ -73,7 +73,7 @@ export default function Album(props: {
                             :
                             <></>
                     }
-                    <button class="button is-primary is-rounded is-outlined"
+                    <button class="is-outlined"
                         onClick={() => {
                             props.onReplacePlaylist(getAlbumList(props.backend, album));
                         }}>

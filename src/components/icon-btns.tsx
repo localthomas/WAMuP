@@ -16,6 +16,10 @@ type IconBtnProps = {
      */
     small?: boolean;
     /**
+     * True sets the display properties of this button as hidden.
+     */
+    hidden?: boolean;
+    /**
      * Callback for an action taking place when the button is pressed.
      */
     onClick: () => void;
@@ -23,7 +27,12 @@ type IconBtnProps = {
 
 const IconBtn: Component<IconBtnProps> = (props) => {
     return (
-        <button class={"is-svg-btn " + (props.outlined ? "is-outlined " : "") + (props.small ? "small" : "")}
+        <button class={
+            "is-svg-btn "
+            + (props.outlined ? "is-outlined " : "")
+            + (props.small ? "small " : "")
+            + (props.hidden ? "hidden " : "")
+        }
             disabled={props.disabled}
             onClick={() => {
                 props.onClick();

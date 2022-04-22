@@ -30,7 +30,7 @@ export const AssetDetailed: Component<AssetDetailedProps> = (props) => {
                 <div class="column is-half is-centered has-text-centered">
                     <p class="title is-4">{metadata.title}</p>
                     <p class="subtitle is-6">{metadata.artist}</p>
-                    <table class="table has-text-justified is-centered mb-3">
+                    <table class="asset-detailed">
                         <tbody>
                             <tr>
                                 <td>Album:</td>

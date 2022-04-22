@@ -38,37 +38,32 @@ export default function PlayerBar(props: {
     return (
         <footer>
             <div class="container">
-                <div class="columns is-centered">
-                    {playlistLength() > maxDisplayedPlaylist ?
-                        <p class="has-text-centered">
-                            <NavLink href="/queue">
-                                {playlistLength() - maxDisplayedPlaylist} more...
-                            </NavLink>
-                        </p>
-                        :
-                        ""}
-                    <table class="table is-fullwidth">
-                        <tbody>
-                            {playlistSnippet().map((info, index) =>
-                                <tr class={index === playlistSnippet().length - 1 ? "active-row" : ""}>
-                                    <td>{info.metadata.title}</td>
-                                    <td>{info.metadata.artist}</td>
-                                    <td class="has-text-right" style={{ padding: "0" }}>
-                                        {index === playlistSnippet().length - 1 ?
-                                            // do not display any buttons on the current playing asset
-                                            ""
-                                            :
-                                            <CrossBtn
-                                                small
-                                                onClick={() => {
-                                                    props.audioSession.removeFromPlaylist(info.index);
-                                                }} />}
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                {playlistLength() > maxDisplayedPlaylist ?
+                    <p>
+                        <NavLink href="/queue">
+                            {playlistLength() - maxDisplayedPlaylist} more...
+                        </NavLink>
+                    </p>
+                    :
+                    ""}
+                <table>
+                    <tbody>
+                        {playlistSnippet().map((info, index) =>
+                            <tr class={index === playlistSnippet().length - 1 ? "active-row" : ""}>
+                                <td>{info.metadata.title}</td>
+                                <td>{info.metadata.artist}</td>
+                                <td class="fixed-width">
+                                    <CrossBtn
+                                        hidden={index === playlistSnippet().length - 1}
+                                        small
+                                        onClick={() => {
+                                            props.audioSession.removeFromPlaylist(info.index);
+                                        }} />
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
                 <AudioControls audioSession={props.audioSession} />
             </div>
         </footer>

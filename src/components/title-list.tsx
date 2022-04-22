@@ -22,24 +22,34 @@ export default function TitleList(props: TitleListProps) {
     type Mapping = {
         value: (meta: MetadataWithID) => JSXElement;
         columnName: string;
+        /** fixed width columns are expected to have short content */
+        fixedWidth: boolean;
     }
     let mapping: Mapping[] = [
-        { value: meta => meta.meta.track.no === 0 ? "" : "" + meta.meta.track.no, columnName: "No" },
+        {
+            value: meta => meta.meta.track.no === 0 ? "" : "" + meta.meta.track.no,
+            columnName: "No",
+            fixedWidth: true,
+        },
         {
             value: (asset) => <NavLink href={"/assets/" + encodeURIComponent(asset.id)}>{asset.meta.title}</NavLink>,
-            columnName: "Title"
+            columnName: "Title",
+            fixedWidth: false,
         },
         {
             value: (asset) => <NavLink href={"/artists/" + encodeURIComponent(asset.meta.artist)}>{asset.meta.artist}</NavLink>,
-            columnName: "Artist"
+            columnName: "Artist",
+            fixedWidth: false,
         },
         {
             value: (asset) => <NavLink href={"/albums/" + encodeURIComponent(asset.meta.album)}>{asset.meta.album}</NavLink>,
-            columnName: "Album"
+            columnName: "Album",
+            fixedWidth: false,
         },
         {
             value: (asset) => secondsToString(asset.meta.durationSeconds ?? 0),
-            columnName: "Length"
+            columnName: "Length",
+            fixedWidth: true,
         },
     ];
     //remove the items from mapping that should be ignored
@@ -59,7 +69,7 @@ export default function TitleList(props: TitleListProps) {
     list.sort(sortFn);
 
     return (
-        <table class="table is-striped is-fullwidth is-hoverable">
+        <table class="is-striped">
             <thead>
                 <tr>
                     {mapping.map((map) => <th>{map.columnName}</th>)}
@@ -68,12 +78,12 @@ export default function TitleList(props: TitleListProps) {
             </thead>
             <tbody>
                 {list.map(asset =>
-                    <tr class={props.currentAsset === asset.id ? "is-selected" : ""}>
+                    <tr class={props.currentAsset === asset.id ? "active-row" : ""}>
                         {mapping.map((map) =>
-                            <td>
+                            <td class={map.fixedWidth ? "fixed-width" : ""}>
                                 {map.value(asset)}
                             </td>)}
-                        <td class="action-column has-text-right">
+                        <td class="fixed-width">
                             <PlayBtn
                                 small
                                 onClick={() => {
