@@ -23,7 +23,7 @@ type IconBtnProps = {
 
 const IconBtn: Component<IconBtnProps> = (props) => {
     return (
-        <button class={"button is-primary is-rounded mx-1 my-1 is-svg-btn " + (props.outlined ? "is-outlined " : "") + (props.small ? "small" : "")}
+        <button class={"is-svg-btn " + (props.outlined ? "is-outlined " : "") + (props.small ? "small" : "")}
             disabled={props.disabled}
             onClick={() => {
                 props.onClick();

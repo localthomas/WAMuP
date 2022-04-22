@@ -28,7 +28,7 @@ export function AudioControls(props: {
     const disabled = createMemo(() => props.audioSession.getAudioState()().assetID !== "" ? false : true);
 
     return (
-        <div class="columns is-vcentered">
+        <div class="audio-controls">
             {props.audioSession.getAudioState()().isPlaying ?
                 <PauseBtn disabled={disabled()}
                     onClick={() => {
@@ -44,7 +44,7 @@ export function AudioControls(props: {
                 onClick={() => {
                     stop();
                 }} />
-            <progress class="time-slider mx-2" max={props.audioSession.getAudioState()().duration} value={props.audioSession.getAudioState()().currentTime}
+            <progress max={props.audioSession.getAudioState()().duration} value={props.audioSession.getAudioState()().currentTime}
                 onClick={(event: any) => {
                     // calculate the relative x position of the users click to the progress-bar
                     const offset = getGlobalOffsetLeft(event.target);
@@ -52,7 +52,7 @@ export function AudioControls(props: {
                     const clickedValue = x * event.target.max / event.target.offsetWidth;
                     seek(clickedValue);
                 }}></progress>
-            <div style={{ "whiteSpace": "nowrap" }} class="mr-2">
+            <div class="time-display">
                 {secondsToString(props.audioSession.getAudioState()().currentTime)} / {secondsToString(props.audioSession.getAudioState()().duration)}
             </div>
             <NextTrackBtn disabled={disabled()}

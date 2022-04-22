@@ -6,6 +6,8 @@
   --primary-color: #89c402;
   /* The color that has the best contrast against the primary color. Usually white or black. */
   --primary-color-contrast: black;
+  --blur-strength: 2rem;
+  --blur-background-color: rgba(0, 0, 0, 0.75);
 }
 
 body {
@@ -42,8 +44,8 @@ nav {
   display: flex;
   top: 0;
   z-index: 1;
-  background-color: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(2rem);
+  background-color: var(--blur-background-color);
+  backdrop-filter: blur(var(--blur-strength));
   border-bottom-color: var(--navbar-border-color);
   border-bottom-style: solid;
   border-bottom-width: var(--navbar-border-size);
@@ -68,6 +70,49 @@ nav>a.active {
   border-color: var(--navbar-border-color);
   margin-bottom: calc(-2 * var(--navbar-border-size));
   border-bottom-color: var(--background-color) !important;
+}
+
+/*
+--- Progress ---
+*/
+
+progress {
+  background-color: gray;
+  border: none;
+  height: calc(var(--size-default) * 2);
+  -webkit-appearance: none;
+}
+
+::-webkit-progress-value {
+  background-color: var(--primary-color);
+}
+
+/*
+--- Player-bar (footer) ---
+*/
+
+footer {
+  position: sticky;
+  bottom: 0;
+  background-color: var(--blur-background-color);
+  backdrop-filter: blur(var(--blur-strength));
+}
+
+.audio-controls {
+  display: flex;
+  align-items: center;
+}
+
+.audio-controls>progress {
+  cursor: pointer;
+  margin: 0rem var(--size-default);
+  width: 100%;
+}
+
+
+.audio-controls>.time-display {
+  white-space: nowrap;
+  margin: 0rem var(--size-default);
 }
 
 /*
