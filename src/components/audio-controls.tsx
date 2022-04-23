@@ -27,6 +27,13 @@ export function AudioControls(props: {
 
     const disabled = createMemo(() => props.audioSession.getAudioState()().assetID !== "" ? false : true);
 
+    const currentTimeAsString = createMemo(() =>
+        secondsToString(props.audioSession.getAudioState()().currentTime)
+    );
+    const durationAsString = createMemo(() =>
+        secondsToString(props.audioSession.getAudioState()().duration)
+    );
+
     return (
         <div class="audio-controls">
             {props.audioSession.getAudioState()().isPlaying ?
@@ -53,7 +60,7 @@ export function AudioControls(props: {
                     seek(clickedValue);
                 }}></progress>
             <div class="time-display">
-                {secondsToString(props.audioSession.getAudioState()().currentTime)} / {secondsToString(props.audioSession.getAudioState()().duration)}
+                {currentTimeAsString()} / {durationAsString()}
             </div>
             <NextTrackBtn disabled={disabled()}
                 onClick={() => {
