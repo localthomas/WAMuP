@@ -1,6 +1,5 @@
 import { Component, createResource } from "solid-js";
 import { BackendStore } from "../backend/backend";
-import { getThumbnail } from "../backend/metadata";
 import { blobToImageWithDefault } from "../miscellaneous/images";
 
 export type AssetDetailedProps = {
@@ -16,7 +15,7 @@ export const AssetDetailed: Component<AssetDetailedProps> = (props) => {
     const metadata = asset.metadata;
 
     const [thumbnail] = createResource(async () => {
-        return await getThumbnail(new Uint8Array(await asset.file.arrayBuffer()), asset.file.type);
+        return await props.backend.getThumbnail(props.assetID);
     });
 
     return (

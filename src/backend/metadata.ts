@@ -63,6 +63,14 @@ export function sortTracksFunction(a: MetadataWithID, b: MetadataWithID): number
     return a.meta.title > b.meta.title ? 1 : 0;
 }
 
+/**
+ * Extract the thumbnail binary data from an audio file.
+ *
+ * It is advised to use the `getThumbnail` method of `BackendStore` instead of dealing with raw data.
+ * @param file the full audio file
+ * @param mime the mime type of the audio file
+ * @returns the thumbnail data or nothing
+ */
 export async function getThumbnail(file: Uint8Array, mime: string): Promise<Blob | undefined> {
     // use the options to skip some parsing that is not required by convertToMetadata
     const metadataRaw = await parseBuffer(file, mime, {

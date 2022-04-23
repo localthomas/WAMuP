@@ -1,7 +1,7 @@
 import { useParams } from "solid-app-router";
 import { createResource } from "solid-js";
 import { Asset, BackendStore } from "../backend/backend";
-import { getThumbnail, MetadataWithID, sortTracksFunction } from "../backend/metadata";
+import { MetadataWithID, sortTracksFunction } from "../backend/metadata";
 import { blobToImageWithDefault } from "../miscellaneous/images";
 import TitleList, { TitleListEvents } from "../components/title-list";
 
@@ -42,7 +42,7 @@ export default function Album(props: {
     });
 
     const [thumbnail] = createResource(async () => {
-        return await getFirstThumbnail(assets.map(asset => asset.asset));
+        return await getFirstThumbnail(props.backend, assets.map(asset => asset.id));
     });
 
     return (
@@ -99,12 +99,11 @@ export default function Album(props: {
  * @param list the list to scan through
  * @returns either the binary data of a thumbnail or nothing
  */
-export async function getFirstThumbnail(list: Asset[]): Promise<Blob | undefined> {
+export async function getFirstThumbnail(backend: BackendStore, list: string[]): Promise<Blob | undefined> {
     let thumbnail: Blob | undefined = undefined;
     // get the first thumbnail of all assets in the list
     for (const asset of list) {
-        const data = new Uint8Array(await asset.file.arrayBuffer());
-        thumbnail = await getThumbnail(data, asset.file.type);
+        thumbnail = await backend.getThumbnail(asset);
         // skip any more thumbnails with breaking the loop
         if (thumbnail) break;
     }

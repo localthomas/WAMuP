@@ -1,7 +1,8 @@
 import { useNavigate } from "solid-app-router";
+import { createSignal } from "solid-js";
 import { Asset, BackendStore } from "../backend/backend";
 import AlbumCard from "../components/album-card";
-import { getAlbumList } from "./album";
+import { getAlbumList, getFirstThumbnail } from "./album";
 
 export default function AlbumsCards(props: {
     backend: BackendStore;
@@ -27,10 +28,15 @@ export default function AlbumsCards(props: {
     return (
         <div class="albums">
             {list.map(album => {
+                const [thumbnailData, setThumbnailData] = createSignal<Blob | undefined>(undefined);
+                getFirstThumbnail(props.backend, album.info.assets).then((thumbnailData) => {
+                    setThumbnailData(thumbnailData);
+                });
+
                 return (
                     <AlbumCard
                         album={album.name}
-                        assets={album.info.assets}
+                        thumbnailData={thumbnailData}
                         albumArtist={album.info.albumArtist}
                         onWantToPlay={() => {
                             props.onReplacePlaylist(getAlbumList(props.backend, album.name));
@@ -46,7 +52,7 @@ export default function AlbumsCards(props: {
 
 type AlbumInfo = {
     numTitles: number;
-    assets: Asset[];
+    assets: string[];
     albumArtist: string;
 }
 
@@ -60,7 +66,7 @@ function processAlbums(data: BackendStore): Map<string, AlbumInfo> {
             // get all assets of this album
             const assetsOfAlbum = data.asAssetList()
                 .filter(asset => asset.asset.metadata.album === currentAlbum)
-                .map(assetWithID => assetWithID.asset);
+                .map(assetWithID => assetWithID.id);
 
             info = {
                 assets: assetsOfAlbum,

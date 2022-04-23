@@ -1,23 +1,18 @@
-import { createResource } from "solid-js";
-import { Asset } from "../backend/backend";
+import { Accessor } from "solid-js";
 import { blobToImageWithDefault } from "../miscellaneous/images";
 import { InfoBtn, PlayBtn } from "./icon-btns";
-import { getFirstThumbnail } from "../views/album";
 
 export default function AlbumCard(props: {
     album: string;
-    assets: Asset[];
+    thumbnailData: Accessor<Blob | undefined>;
     albumArtist: string;
     onWantToPlay: () => void;
     onWantToSeeAlbum: () => void;
 }) {
-    const [thumbnail] = createResource(async () => {
-        return await getFirstThumbnail(props.assets);
-    });
     return (
         <div class="album-card">
             <div class="image-overlay-container">
-                {blobToImageWithDefault(thumbnail())}
+                {blobToImageWithDefault(props.thumbnailData())}
                 <div class="image-overlay">
                     <PlayBtn outlined
                         onClick={() => {
