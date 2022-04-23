@@ -47,6 +47,7 @@ body {
 /* allow the main content (in the middle between nav and footer) to grow into the viewport size */
 main {
   flex-grow: 1;
+  margin-bottom: calc(var(--size-default) * 4);
 }
 
 /* --- Layout Asset-Detailed and Album --- */
@@ -174,14 +175,14 @@ img {
 }
 
 .db-scale {
-  background-color: #4f4f4f;
+  background-color: gray;
   position: relative;
   margin-bottom: calc(var(--size-default) * 2);
 }
 
 .db-scale .db-scale-bar {
-  background-color: #89c402;
-  height: 2rem;
+  background-color: var(--primary-color);
+  height: 1.5em;
 }
 
 .db-scale .db-scale-text {
@@ -193,6 +194,37 @@ img {
   justify-content: center;
   align-items: center;
   color: black;
+}
+
+/*
+--- Loudness Graph ---
+*/
+
+.loudness-graph fieldset {
+  margin: auto;
+}
+
+.loudness-graph canvas {
+  width: 100%;
+  cursor: pointer;
+}
+
+.loudness-graph-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.loudness-graph-label table {
+  width: fit-content;
+}
+
+.loudness-graph-label table tr {
+  border: none !important;
+}
+
+.loudness-graph-label table td {
+  padding: 0;
 }
 
 /*
@@ -528,9 +560,40 @@ hr {
 }
 
 /*
+--- Loading Spinner ---
+*/
+
+.loading-spinner-small {
+  --spinner-line-width: 0.2em;
+  --spinner-size: calc(1em - calc(var(--spinner-line-width) * 2));
+  display: inline-block;
+  vertical-align: middle;
+  border: var(--spinner-line-width) solid transparent;
+  border-top: var(--spinner-line-width) solid var(--text-color);
+  border-radius: 50%;
+  width: var(--spinner-size);
+  height: var(--spinner-size);
+  animation: spinAround 500ms infinite linear;
+}
+
+/*
 --- Misc ---
 */
 
 .hidden {
   visibility: hidden;
+}
+
+.text-right {
+  text-align: right;
+}
+
+@keyframes spinAround {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(359deg);
+  }
 }

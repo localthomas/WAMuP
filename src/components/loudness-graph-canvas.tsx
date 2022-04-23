@@ -84,7 +84,7 @@ export default function LoudnessGraphCanvas(props: {
     createEffect(draw);
 
     return (
-        <canvas class="loudness-graph-canvas is-clickable" ref={canvasRef}
+        <canvas ref={canvasRef}
             onClick={(e) => {
                 const xRel = getMousePositionRelative(e);
                 const newTime = xRel * props.audioState().duration;

@@ -89,36 +89,36 @@ export default function LoudnessGraph(props: {
     });
 
     return (
-        <div class="mb-0 mt-2">
-            <div class="level">
-                <div class="level-left">
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td>Integrated Loudness:&nbsp;</td>
-                                <td>{integratedLoudnessBody} LUFS</td>
-                            </tr>
-                            <tr>
-                                <td>Integrated Loudness Range:&nbsp;</td>
-                                <td>{loudnessRangeBody} LU</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="level-right has-text-right" style={{
-                    "flexShrink": "1"
-                }}>
-                    <div>
-                        y-axis: loudness in {shortTermLoudnessMapWindowSizeTarget()}s window [{GRAPH_MINIMAL_LOUDNESS}; 0] [LUFS]
-                        <br></br>
-                        color: loudness range [LU] in {shortTermLoudnessMapWindowSizeTarget()}s analysis window [0: red; {GRAPH_GREEN_LOUDNESS_RANGE}: green]
-                    </div>
-                </div>
+        <div class="loudness-graph">
+            <div class="loudness-graph-label">
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Integrated Loudness:&nbsp;</td>
+                            <td>{integratedLoudnessBody} LUFS</td>
+                        </tr>
+                        <tr>
+                            <td>Integrated Loudness Range:&nbsp;</td>
+                            <td>{loudnessRangeBody} LU</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="text-right">
+                    <tbody>
+                        <tr>
+                            <td>y-axis: loudness in {shortTermLoudnessMapWindowSizeTarget()}s window [{GRAPH_MINIMAL_LOUDNESS}; 0] [LUFS]</td>
+                        </tr>
+                        <tr>
+                            <td>color: loudness range [LU] in {shortTermLoudnessMapWindowSizeTarget()}s analysis window [0: red; {GRAPH_GREEN_LOUDNESS_RANGE}: green]</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <LoudnessGraphCanvas {...props}
                 loudnessFrames={shortTermLoudnessMap()}
                 analysisWindowSizeS={shortTermLoudnessMapWindowSizeTarget} />
-            <div>
+            <fieldset>
+                <legend>Loudness analysis window size ({shortTermLoudnessMapWindowSizeTarget()}s)</legend>
                 <input type="range" min="0.1" max="5" step="0.1" value={shortTermLoudnessMapWindowSizeTarget()}
                     onChange={event => {
                         setShortTermLoudnessMapWindowSizeTarget(parseFloat(event.currentTarget.value));
@@ -126,8 +126,7 @@ export default function LoudnessGraph(props: {
                     onDblClick={() => {
                         setShortTermLoudnessMapWindowSizeTarget(DEFAULT_LOUDNESS_WINDOW_SIZE_S);
                     }} />
-                <label class="ml-2">loudness analysis window size ({shortTermLoudnessMapWindowSizeTarget()}s)</label>
-            </div>
+            </fieldset>
         </div>
     );
 }
