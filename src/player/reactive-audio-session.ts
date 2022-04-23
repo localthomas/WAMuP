@@ -2,13 +2,13 @@ import { Accessor, createSignal, Signal } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import AudioEBUR128 from "./audio-ebur128";
 import { AudioPlayerState } from "./audio-player";
-import { AudioSession } from "./audio-session";
+import { AudioSession, PlayerStateUpdate } from "./audio-session";
 
 /**
  * Wraps a normal `AudioSession` and provides reactive access to certain state of the session via
  * solidjs' `Accessor`s.
  */
-export class ReactiveAudioSession {
+export default class ReactiveAudioSession {
     /** the static instance of this class, as it is meant to be used as a singleton */
     private static instance?: ReactiveAudioSession;
 
@@ -119,6 +119,14 @@ export class ReactiveAudioSession {
         currentTime?: number;
     }) {
         this.audioSession.setNewPlayerState(newState);
+    }
+
+    /**
+     * Create a new player state based off an old state.
+     * @param newState calculates a new state based off an old state
+     */
+    public setNewPlayerStateFromOld(newState: (oldState: AudioPlayerState) => PlayerStateUpdate) {
+        this.audioSession.setNewPlayerStateFromOld(newState);
     }
 
 

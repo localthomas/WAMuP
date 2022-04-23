@@ -11,7 +11,8 @@ import Asset from '../views/asset';
 import Queue from '../views/queue';
 import Visualizer from '../views/visualizer';
 import PlayerBar from './player-bar';
-import { ReactiveAudioSession } from '../player/reactive-audio-session';
+import ReactiveAudioSession from '../player/reactive-audio-session';
+import AudioMediaSessionConnector from '../player/audio-media-session-connector';
 
 const App: Component = () => {
     const [backendState, setBackendState] = createSignal<BackendState>({ tag: "None" });
@@ -23,10 +24,12 @@ const App: Component = () => {
     const page = createMemo(() => {
         const backend = backendState();
         if (backend.tag === "Backend") {
+            const audioSession = ReactiveAudioSession.getInstance(backend.store);
+            AudioMediaSessionConnector.connect(backend.store, audioSession);
             return layoutWithLoadedBackend(
                 defaultComponent,
                 backend.store,
-                ReactiveAudioSession.getInstance(backend.store),
+                audioSession,
             );
         } else {
             return defaultComponent;

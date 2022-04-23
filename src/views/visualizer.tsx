@@ -3,7 +3,7 @@ import { AssetDetailed } from "../components/asset-detailed";
 import EBUR128Meter from "../components/ebu-r128-meter";
 import LoudnessGraph from "../components/loudness-graph";
 import Spectrum from "../components/spectrum";
-import { ReactiveAudioSession } from "../player/reactive-audio-session";
+import ReactiveAudioSession from "../player/reactive-audio-session";
 
 export default function Visualizer(props: {
     backend: BackendStore;

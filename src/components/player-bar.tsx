@@ -2,7 +2,7 @@ import { NavLink } from "solid-app-router";
 import { createMemo } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import { Metadata } from "../backend/metadata";
-import { ReactiveAudioSession } from "../player/reactive-audio-session";
+import ReactiveAudioSession from "../player/reactive-audio-session";
 import { AudioControls } from "./audio-controls";
 import { CrossBtn } from "./icon-btns";
 

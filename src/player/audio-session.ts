@@ -1,13 +1,17 @@
 import { BackendStore } from "../backend/backend";
 import AudioEBUR128 from "./audio-ebur128";
 import AudioPlayer, { AudioPlayerState } from "./audio-player";
-import { registerMediaSessionHandlers, setMediaSessionMetadata } from "./media-session";
 import { ObservableQueue } from "./queue";
+
+export type PlayerStateUpdate = {
+    isPlaying?: boolean;
+    currentTime?: number;
+};
 
 /**
  * An `AudioSession` combines an `AudioPlayer`, a queue (as playlist), and a `BackendStore` into a single session
  * that holds all states for audio playback and playlist management.
- * It also integrates with various browser APIs (if they are available), such as MediaSession, and sets the tab's title.
+ * It also sets the tab's title.
  */
 export class AudioSession {
     /** the static instance of this class, as it is meant to be used as a singleton */
@@ -59,36 +63,6 @@ export class AudioSession {
             }
         }
 
-        // setup of MediaSession:
-        registerMediaSessionHandlers({
-            setPlaying: (playing) => {
-                this.audioPlayer.setNewPlayerState(() => {
-                    return { isPlaying: playing };
-                });
-            },
-            seekRelative: (offset) => {
-                this.audioPlayer.setNewPlayerState((oldState) => {
-                    return { currentTime: oldState.currentTime + offset };
-                });
-            },
-            seekAbsolute: (time) => {
-                this.audioPlayer.setNewPlayerState(() => {
-                    return { currentTime: time };
-                });
-            },
-            stop: () => {
-                this.audioPlayer.setNewPlayerState(() => {
-                    return {
-                        isPlaying: false,
-                        currentTime: 0,
-                    }
-                });
-            },
-            nextTrack: () => {
-                this.nextTrack();
-            }
-        });
-
         // setup for listening to changes of the audio player
         this.audioPlayer.onStateChangeListener = this.onAudioPlayerStateChange.bind(this);
 
@@ -129,13 +103,6 @@ export class AudioSession {
     private async onAudioPlayerStateChange(newState: AudioPlayerState, oldState: AudioPlayerState) {
         // only react to changes in the current asset
         if (oldState.assetID !== newState.assetID) {
-            // when updating the player, also update the Media Session API
-            const asset = this.backend.get(newState.assetID);
-            const thumbnail = await this.backend.getThumbnail(newState.assetID);
-            if (asset) {
-                setMediaSessionMetadata(asset.metadata, thumbnail);
-            }
-
             // when updating the player, also update the title of the web page
             const meta = this.backend.mustGet(newState.assetID).metadata;
             if (meta) {
@@ -197,11 +164,16 @@ export class AudioSession {
      * Set the audio player state with new values.
      * @param newState the new state values
      */
-    public setNewPlayerState(newState: {
-        isPlaying?: boolean;
-        currentTime?: number;
-    }) {
+    public setNewPlayerState(newState: PlayerStateUpdate) {
         this.audioPlayer.setNewPlayerState(() => newState);
+    }
+
+    /**
+     * Create a new player state based off an old state.
+     * @param newState calculates a new state based off an old state
+     */
+    public setNewPlayerStateFromOld(newState: (oldState: AudioPlayerState) => PlayerStateUpdate) {
+        this.audioPlayer.setNewPlayerState(newState);
     }
 
     /**

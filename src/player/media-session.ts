@@ -25,7 +25,7 @@ export function registerMediaSessionHandlers(
         /**
          * callback when the next track should be played
          */
-        nextTrack: (() => void),
+        nextTrack?: (() => void),
     }
 ) {
     if ("mediaSession" in navigator) {
@@ -38,7 +38,13 @@ export function registerMediaSessionHandlers(
         // TODO: implement previous track function?
         // TODO: remove previoustrack handler, if there is no previous track
         //navigator.mediaSession.setActionHandler("previoustrack", event => { console.log("previoustrack", event) });
-        navigator.mediaSession.setActionHandler("nexttrack", _event => { callbacks.nextTrack(); });
+
+        navigator.mediaSession.setActionHandler("nexttrack",
+            callbacks.nextTrack ?
+                _event => { callbacks.nextTrack?.(); }
+                :
+                null
+        );
     } else {
         console.warn("MediaSession API is not supported!");
     }

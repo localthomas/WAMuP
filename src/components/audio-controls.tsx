@@ -1,6 +1,6 @@
-import { createMemo, createSignal } from "solid-js";
+import { createMemo } from "solid-js";
 import { secondsToString } from "../miscellaneous/time-conversion";
-import { ReactiveAudioSession } from "../player/reactive-audio-session";
+import ReactiveAudioSession from "../player/reactive-audio-session";
 import { NextTrackBtn, PauseBtn, PlayBtn, StopBtn } from "./icon-btns";
 
 export function AudioControls(props: {

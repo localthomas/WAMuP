@@ -1,5 +1,5 @@
 import { createEffect, createSignal, onCleanup } from "solid-js";
-import { ReactiveAudioSession } from "../player/reactive-audio-session";
+import ReactiveAudioSession from "../player/reactive-audio-session";
 import { MinusBtn, PlusBtn } from "./icon-btns";
 
 const MAX_FREQ = 18000;
