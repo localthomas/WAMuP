@@ -33,6 +33,20 @@ body {
   margin: 0 auto;
 }
 
+/* note: the navbar should always be at the top and the footer always pushed to the bottom */
+#root {
+  /* the root node (where all content is a children of) stretches to the whole viewport */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* allow the main content (in the middle between nav and footer) to grow into the viewport size */
+main {
+  flex-grow: 1;
+}
+
 /*
 --- Navbar ---
 */

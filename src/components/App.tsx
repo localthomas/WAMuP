@@ -46,65 +46,67 @@ function layoutWithLoadedBackend(defaultComponent: JSX.Element, backendStore: Ba
     return (
         <>
             <Navigation />
-            <Routes>
-                <Route path="/assets/:id" element={
-                    <Asset
-                        backend={backendStore}
-                        onPlayNow={audioSession.playNow.bind(audioSession)}
-                        onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
-                    />}
-                />
-                <Route path="/queue" element={
-                    <Queue
-                        backend={backendStore}
-                        playlist={audioSession.getQueue()()}
-                        onRemoveFromPlaylist={audioSession.removeFromPlaylist.bind(audioSession)}
-                        onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
-                    />}
-                />
-                <Route path="/visualizer" element={
-                    <Visualizer
-                        backend={backendStore}
-                        audioSession={audioSession}
-                    />}
-                />
-                <Route path="/albums" element={
-                    <Albums
-                        backend={backendStore}
-                        onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
-                    />}
-                />
-                <Route path="/albums/:id" element={
-                    <Album
-                        backend={backendStore}
-                        onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
-                        currentAsset={audioSession.getAudioState()().assetID}
-                        onPlayNow={audioSession.playNow.bind(audioSession)}
-                        onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
-                    />}
-                />
-                <Route path="/artists" element={
-                    <Artists
-                        backend={backendStore}
-                    />}
-                />
-                <Route path="/artists/:id" element={
-                    <Artist
-                        backend={backendStore}
-                        currentAsset={audioSession.getAudioState()().assetID}
-                        onPlayNow={audioSession.playNow.bind(audioSession)}
-                        onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
-                    />}
-                />
-                <Route path="/" element={
-                    defaultComponent}
-                />
-                <Route path="/*all" element={
-                    <Navigate
-                        href={"/"}
-                    />}
-                />
-            </Routes>
+            <main>
+                <Routes>
+                    <Route path="/assets/:id" element={
+                        <Asset
+                            backend={backendStore}
+                            onPlayNow={audioSession.playNow.bind(audioSession)}
+                            onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
+                        />}
+                    />
+                    <Route path="/queue" element={
+                        <Queue
+                            backend={backendStore}
+                            playlist={audioSession.getQueue()()}
+                            onRemoveFromPlaylist={audioSession.removeFromPlaylist.bind(audioSession)}
+                            onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
+                        />}
+                    />
+                    <Route path="/visualizer" element={
+                        <Visualizer
+                            backend={backendStore}
+                            audioSession={audioSession}
+                        />}
+                    />
+                    <Route path="/albums" element={
+                        <Albums
+                            backend={backendStore}
+                            onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
+                        />}
+                    />
+                    <Route path="/albums/:id" element={
+                        <Album
+                            backend={backendStore}
+                            onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
+                            currentAsset={audioSession.getAudioState()().assetID}
+                            onPlayNow={audioSession.playNow.bind(audioSession)}
+                            onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
+                        />}
+                    />
+                    <Route path="/artists" element={
+                        <Artists
+                            backend={backendStore}
+                        />}
+                    />
+                    <Route path="/artists/:id" element={
+                        <Artist
+                            backend={backendStore}
+                            currentAsset={audioSession.getAudioState()().assetID}
+                            onPlayNow={audioSession.playNow.bind(audioSession)}
+                            onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
+                        />}
+                    />
+                    <Route path="/" element={
+                        defaultComponent}
+                    />
+                    <Route path="/*all" element={
+                        <Navigate
+                            href={"/"}
+                        />}
+                    />
+                </Routes>
+            </main>
             <PlayerBar
                 audioSession={audioSession}
                 backend={backendStore}
