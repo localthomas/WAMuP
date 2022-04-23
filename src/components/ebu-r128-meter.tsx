@@ -18,26 +18,24 @@ export default function EBUR128Meter(props: {
 
     return (
         <div>
-            <div class="level mb-0">
-                <div class="level-left">
-                    Momentary
-                    <span class="ml-2 has-text-weight-light is-size-7">(400ms)</span>
-                </div>
-                <div class="level-right">
-                    LUFS
-                </div>
-            </div>
-            <DbScale minDb={-50} maxDb={0} value={momentary()} />
-            <div class="level mb-0 mt-2">
-                <div class="level-left">
-                    Short Term
-                    <span class="ml-2 has-text-weight-light is-size-7">(3s)</span>
-                </div>
-                <div class="level-right">
-                    LUFS
-                </div>
-            </div>
-            <DbScale minDb={-50} maxDb={0} value={shortTerm()} />
+            <DbScale
+                label={{
+                    left: <>Momentary <small>(400ms)</small></>,
+                    right: <>LUFS</>,
+                }}
+                minDb={-50}
+                maxDb={0}
+                value={momentary()}
+            />
+            <DbScale
+                label={{
+                    left: <>Short Term <small>(3s)</small></>,
+                    right: <>LUFS</>,
+                }}
+                minDb={-50}
+                maxDb={0}
+                value={shortTerm()}
+            />
         </div>
     );
 }
