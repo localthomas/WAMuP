@@ -46,22 +46,20 @@ export default function Album(props: {
     });
 
     return (
-        <div class="container">
+        <div class="container album">
             <div class="columns">
-                <div class="column is-half">
-                    <figure class="image">
-                        {blobToImageWithDefault(thumbnail())}
-                    </figure>
+                <div class="column">
+                    {blobToImageWithDefault(thumbnail())}
                 </div>
-                <div class="column is-half">
-                    <h1 class="title">{album}</h1>
-                    <h2 class="subtitle">
+                <div class="column details">
+                    <h1>{album}</h1>
+                    <h2>
                         {albumsArtistsList.join("; ")}
                     </h2>
                     {
                         // only display the year, if both year values are valid
                         newestYear !== 0 && oldestYear !== Number.MAX_VALUE ?
-                            <h6 class="subtitle is-6">
+                            <p>
                                 {
                                     newestYear === 0 ? " " :
                                         oldestYear === newestYear ?
@@ -69,7 +67,7 @@ export default function Album(props: {
                                             :
                                             oldestYear + " - " + newestYear
                                 }
-                            </h6>
+                            </p>
                             :
                             <></>
                     }

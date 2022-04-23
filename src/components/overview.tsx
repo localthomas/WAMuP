@@ -22,7 +22,7 @@ export default function Overview(props: {
         const stats = statistics();
         if (stats) {
             return (
-                <table class="asset-detailed">
+                <table class="overview">
                     <tbody>
                         <tr>
                             <td>Number of artists:</td>

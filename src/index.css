@@ -47,6 +47,40 @@ main {
   flex-grow: 1;
 }
 
+/* --- Layout Asset-Detailed and Album --- */
+
+.asset-detailed,
+.album .columns {
+  display: flex;
+  flex-direction: row;
+}
+
+.asset-detailed .column,
+.album .column {
+  width: 50%;
+  margin: var(--size-default);
+}
+
+.asset-detailed .column.details,
+.album .details {
+  text-align: center;
+}
+
+.asset-detailed .column.details table {
+  margin: auto;
+}
+
+/*
+--- Img ---
+*/
+
+img {
+  display: block;
+  height: auto;
+  width: 100%;
+  max-width: 100%;
+}
+
 /*
 --- Navbar ---
 */
@@ -61,6 +95,7 @@ nav {
   display: flex;
   top: 0;
   z-index: 1;
+  margin-bottom: calc(var(--size-default) * 6);
   background-color: var(--blur-background-color);
   backdrop-filter: blur(var(--blur-strength));
   border-bottom-color: var(--navbar-border-color);
@@ -117,6 +152,7 @@ footer {
 
 footer p {
   text-align: center;
+  margin: 0;
 }
 
 .audio-controls {
@@ -142,13 +178,16 @@ footer p {
 
 /* --- Asset Detailed Table --- */
 
-table.asset-detailed {
+.asset-detailed table,
+table.overview {
   width: max-content;
   max-width: 100%;
 }
 
 /* the first column should not wrap, as it contains no dynamic content */
-table.asset-detailed td:first-child {
+.asset-detailed table td:first-child,
+/* an overview table only contains short numbers, so prevent wrapping in every cell */
+table.overview {
   white-space: nowrap;
 }
 

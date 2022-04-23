@@ -23,7 +23,6 @@ export default function Queue(props: {
     }
 
     const id: string = props.playlist[0];
-    // TODO: replace table below with customized title-list
     return (
         <div class="container">
             <AssetDetailed backend={props.backend} assetID={id}>

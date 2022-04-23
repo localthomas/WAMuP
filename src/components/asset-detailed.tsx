@@ -20,54 +20,50 @@ export const AssetDetailed: Component<AssetDetailedProps> = (props) => {
     });
 
     return (
-        <div class="container">
-            <div class="columns">
-                <div class="column is-half">
-                    <figure class="image">
-                        {blobToImageWithDefault(thumbnail())}
-                    </figure>
-                </div>
-                <div class="column is-half is-centered has-text-centered">
-                    <p class="title is-4">{metadata.title}</p>
-                    <p class="subtitle is-6">{metadata.artist}</p>
-                    <table class="asset-detailed">
-                        <tbody>
-                            <tr>
-                                <td>Album:</td>
-                                <td>{metadata.album}</td>
-                            </tr>
-                            <tr>
-                                <td>Album Artist:</td>
-                                <td>{metadata.albumArtist}</td>
-                            </tr>
-                            <tr>
-                                <td>Composer:</td>
-                                <td>{metadata.composer}</td>
-                            </tr>
-                            <tr>
-                                <td>Genre:</td>
-                                <td>{metadata.genre}</td>
-                            </tr>
-                            <tr>
-                                <td>Year:</td>
-                                <td>{metadata.year}</td>
-                            </tr>
-                            <tr>
-                                <td>Track:</td>
-                                <td>{metadata.track.no}/{metadata.track.of}</td>
-                            </tr>
-                            <tr>
-                                <td>Disc:</td>
-                                <td>{metadata.disc.no}/{metadata.disc.of}</td>
-                            </tr>
-                            <tr>
-                                <td>Codec:</td>
-                                <td>{metadata.codec}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    {props.children}
-                </div>
+        <div class="asset-detailed">
+            <div class="column">
+                {blobToImageWithDefault(thumbnail())}
+            </div>
+            <div class="column details">
+                <h1>{metadata.title}</h1>
+                <h2>{metadata.artist}</h2>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>Album:</td>
+                            <td>{metadata.album}</td>
+                        </tr>
+                        <tr>
+                            <td>Album Artist:</td>
+                            <td>{metadata.albumArtist}</td>
+                        </tr>
+                        <tr>
+                            <td>Composer:</td>
+                            <td>{metadata.composer}</td>
+                        </tr>
+                        <tr>
+                            <td>Genre:</td>
+                            <td>{metadata.genre}</td>
+                        </tr>
+                        <tr>
+                            <td>Year:</td>
+                            <td>{metadata.year}</td>
+                        </tr>
+                        <tr>
+                            <td>Track:</td>
+                            <td>{metadata.track.no}/{metadata.track.of}</td>
+                        </tr>
+                        <tr>
+                            <td>Disc:</td>
+                            <td>{metadata.disc.no}/{metadata.disc.of}</td>
+                        </tr>
+                        <tr>
+                            <td>Codec:</td>
+                            <td>{metadata.codec}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                {props.children}
             </div>
         </div>
     );
