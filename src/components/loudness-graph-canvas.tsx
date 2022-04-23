@@ -1,5 +1,6 @@
 import { Accessor, createEffect } from "solid-js";
 import { AudioPlayerState } from "../player/audio-player";
+import LoadingSpinnerSmall from "./loading-spinner-small";
 
 export type LoudnessAndRange = {
     loudness: number; // LUFS (<= 0)
@@ -40,11 +41,8 @@ export default function LoudnessGraphCanvas(props: {
             console.warn("canvas could not be referenced in loudness-graph-canvas!");
             return;
         }
-        // break, if the loudnessFrames are still loading
-        if (props.loudnessFrames === "loading") {
-            // TODO: show a spinner instead of doing nothing!
-            return;
-        }
+        // use empty list, if the loudnessFrames are still loading
+        const loudnessFrames = props.loudnessFrames === "loading" ? [] : props.loudnessFrames;
 
         const canvas = canvasRef;
         canvas.width = canvas.offsetWidth;
@@ -55,8 +53,8 @@ export default function LoudnessGraphCanvas(props: {
         }
         drawCtx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const barWidth = canvas.width / props.loudnessFrames.length;
-        for (const [i, shortTerm] of props.loudnessFrames.entries()) {
+        const barWidth = canvas.width / loudnessFrames.length;
+        for (const [i, shortTerm] of loudnessFrames.entries()) {
             const percent = 1 - (shortTerm.loudness / GRAPH_MINIMAL_LOUDNESS);
             const heightPx = canvas.height * percent;
             const offset = canvas.height - heightPx - 1;
@@ -84,12 +82,21 @@ export default function LoudnessGraphCanvas(props: {
     createEffect(draw);
 
     return (
-        <canvas ref={canvasRef}
-            onClick={(e) => {
-                const xRel = getMousePositionRelative(e);
-                const newTime = xRel * props.audioState().duration;
-                props.onWantsToSeek(newTime);
-            }}></canvas>
+        <div class="loudness-graph-canvas-container">
+            <canvas ref={canvasRef}
+                onClick={(e) => {
+                    const xRel = getMousePositionRelative(e);
+                    const newTime = xRel * props.audioState().duration;
+                    props.onWantsToSeek(newTime);
+                }}></canvas>
+            {props.loudnessFrames === "loading" ?
+                <div class="loudness-graph-canvas-loading-spinner-container">
+                    <LoadingSpinnerSmall />
+                </div>
+                :
+                <></>
+            }
+        </div>
     );
 }
 
