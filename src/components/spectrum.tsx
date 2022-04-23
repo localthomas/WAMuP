@@ -19,14 +19,15 @@ export default function Spectrum(props: {
         const analyser = props.audioSession.getAnalyserNode();
         analyser.minDecibels = -140;
         analyser.maxDecibels = 0;
+        analyser.smoothingTimeConstant = smoothing();
+        analyser.fftSize = fftSize();
+
         let freqs = new Uint8Array(analyser.frequencyBinCount);
         function draw() {
             //break, if the canvas is no longer in the DOM
             if (!canvasRef) {
                 return;
             }
-            analyser.smoothingTimeConstant = smoothing();
-            analyser.fftSize = fftSize();
 
             analyser.getByteFrequencyData(freqs);
 
@@ -46,7 +47,8 @@ export default function Spectrum(props: {
             const barWidth = width / shownLength;
 
             drawCtx.clearRect(0, 0, canvas.width, canvas.height);
-            drawCtx.fillStyle = '#89c402';
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+            drawCtx.fillStyle = primaryColor;
             for (let i = 0; i < shownLength; i++) {
                 const value = freqs[i];
                 const percent = value / 256;
