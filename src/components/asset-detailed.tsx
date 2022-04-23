@@ -1,6 +1,6 @@
 import { Component, createResource } from "solid-js";
 import { BackendStore } from "../backend/backend";
-import { blobToImageWithDefault } from "../miscellaneous/images";
+import { blobToImageSrcWithDefault } from "../miscellaneous/images";
 
 export type AssetDetailedProps = {
     backend: BackendStore;
@@ -21,7 +21,7 @@ export const AssetDetailed: Component<AssetDetailedProps> = (props) => {
     return (
         <div class="asset-detailed">
             <div class="column">
-                {blobToImageWithDefault(thumbnail())}
+                <img src={blobToImageSrcWithDefault(thumbnail())} loading="lazy" />
             </div>
             <div class="column details">
                 <h1>{metadata.title}</h1>

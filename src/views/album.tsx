@@ -2,7 +2,7 @@ import { useParams } from "solid-app-router";
 import { createResource } from "solid-js";
 import { Asset, BackendStore } from "../backend/backend";
 import { MetadataWithID, sortTracksFunction } from "../backend/metadata";
-import { blobToImageWithDefault } from "../miscellaneous/images";
+import { blobToImageSrcWithDefault } from "../miscellaneous/images";
 import TitleList, { TitleListEvents } from "../components/title-list";
 
 export default function Album(props: {
@@ -49,7 +49,7 @@ export default function Album(props: {
         <div class="container album">
             <div class="columns">
                 <div class="column">
-                    {blobToImageWithDefault(thumbnail())}
+                    <img src={blobToImageSrcWithDefault(thumbnail())} loading="lazy" />
                 </div>
                 <div class="column details">
                     <h1>{album}</h1>

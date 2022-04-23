@@ -1,5 +1,5 @@
 import { Accessor } from "solid-js";
-import { blobToImageWithDefault } from "../miscellaneous/images";
+import { blobToImageSrcWithDefault } from "../miscellaneous/images";
 import { InfoBtn, PlayBtn } from "./icon-btns";
 
 export default function AlbumCard(props: {
@@ -12,7 +12,7 @@ export default function AlbumCard(props: {
     return (
         <div class="album-card">
             <div class="image-overlay-container">
-                {blobToImageWithDefault(props.thumbnailData())}
+                <img src={blobToImageSrcWithDefault(props.thumbnailData())} loading="lazy" />
                 <div class="image-overlay">
                     <PlayBtn outlined
                         onClick={() => {

@@ -19,6 +19,7 @@ export interface Loading extends Progress {
  * A Backend stores the result of scanning a directory of audio files.
  */
 export class BackendStore {
+    /** All assets with their IDs as key. */
     private assets: Map<string, Asset>;
     /**
      * The name of the directory that was used to create this backend.

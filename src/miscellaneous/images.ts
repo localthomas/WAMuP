@@ -5,23 +5,16 @@
  * @param blob the binary data that must be valid image data
  * @returns a HTML img element
  */
-export function blobToImageWithDefault(blob: Blob | undefined): HTMLImageElement {
+export function blobToImageSrcWithDefault(blob: Blob | undefined): string {
     if (blob) {
-        return blobToImage(blob);
+        return blobToImageSrc(blob);
     } else {
-        let img = document.createElement('img');
-        img.src = new URL('../assets/default-image.png', import.meta.url).href;
-        return img;
+        return new URL('../assets/default-image.png', import.meta.url).href;
     }
 }
 
 
-function blobToImage(blob: Blob): HTMLImageElement {
+function blobToImageSrc(blob: Blob): string {
     const url = URL.createObjectURL(blob);
-    let img = new Image();
-    img.onload = () => {
-        URL.revokeObjectURL(url);
-    }
-    img.src = url;
-    return img;
+    return url;
 }
