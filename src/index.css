@@ -91,6 +91,11 @@ main {
   box-shadow: var(--floating-shadow-cards);
 }
 
+/* special case: remove underline from anchors in album cards */
+.album-card a {
+  text-decoration: none;
+}
+
 .albums .album-card .image-overlay-container {
   position: relative;
 }
@@ -107,7 +112,6 @@ main {
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.4);
-  color: #fff;
   transition: opacity .2s, visibility .2s;
 }
 
@@ -119,7 +123,6 @@ main {
 
 .albums .album-card .card-content {
   padding: calc(var(--size-default) * 2) calc(var(--size-default) * 4);
-  cursor: pointer;
 }
 
 .albums .album-card .card-content h4 {

@@ -1,3 +1,4 @@
+import { NavLink, useNavigate } from "solid-app-router";
 import { Accessor } from "solid-js";
 import { blobToImageSrcWithDefault } from "../miscellaneous/images";
 import { InfoBtn, PlayBtn } from "./icon-btns";
@@ -7,8 +8,9 @@ export default function AlbumCard(props: {
     thumbnailData: Accessor<Blob | undefined>;
     albumArtist: string;
     onWantToPlay: () => void;
-    onWantToSeeAlbum: () => void;
 }) {
+    const navigate = useNavigate();
+
     return (
         <div class="album-card">
             <div class="image-overlay-container">
@@ -20,15 +22,21 @@ export default function AlbumCard(props: {
                         }} />
                     <InfoBtn outlined
                         onClick={() => {
-                            props.onWantToSeeAlbum();
+                            navigate("/albums/" + encodeURIComponent(props.album));
                         }} />
                 </div>
             </div>
-            <div class="card-content" onClick={() => {
-                props.onWantToSeeAlbum();
-            }}>
-                <h4>{props.album}</h4>
-                <p>{props.albumArtist}</p>
+            <div class="card-content">
+                <h4>
+                    <NavLink href={"/albums/" + encodeURIComponent(props.album)}>
+                        {props.album}
+                    </NavLink>
+                </h4>
+                <p>
+                    <NavLink href={"/artists/" + encodeURIComponent(props.albumArtist)}>
+                        {props.albumArtist}
+                    </NavLink>
+                </p>
             </div>
         </div>
     );

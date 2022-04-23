@@ -41,9 +41,7 @@ export default function AlbumsCards(props: {
                         onWantToPlay={() => {
                             props.onReplacePlaylist(getAlbumList(props.backend, album.name));
                         }}
-                        onWantToSeeAlbum={() => {
-                            navigate("/albums/" + encodeURIComponent(album.name));
-                        }} />
+                    />
                 );
             })}
         </div>
