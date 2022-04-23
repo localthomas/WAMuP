@@ -25,25 +25,21 @@ export default function AlbumsCards(props: {
         a.name > b.name ? 1 : a.name < b.name ? -1 : 0
     );
     return (
-        <div class="container is-fluid">
-            <div class="columns is-centered is-multiline">
-                {list.map(album => {
-                    return (
-                        <div class="column is-album-card">
-                            <AlbumCard
-                                album={album.name}
-                                assets={album.info.assets}
-                                albumArtist={album.info.albumArtist}
-                                onWantToPlay={() => {
-                                    props.onReplacePlaylist(getAlbumList(props.backend, album.name));
-                                }}
-                                onWantToSeeAlbum={() => {
-                                    navigate("/albums/" + encodeURIComponent(album.name));
-                                }} />
-                        </div>
-                    );
-                })}
-            </div>
+        <div class="albums">
+            {list.map(album => {
+                return (
+                    <AlbumCard
+                        album={album.name}
+                        assets={album.info.assets}
+                        albumArtist={album.info.albumArtist}
+                        onWantToPlay={() => {
+                            props.onReplacePlaylist(getAlbumList(props.backend, album.name));
+                        }}
+                        onWantToSeeAlbum={() => {
+                            navigate("/albums/" + encodeURIComponent(album.name));
+                        }} />
+                );
+            })}
         </div>
     );
 }

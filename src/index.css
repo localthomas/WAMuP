@@ -11,6 +11,8 @@
   --table-grid-color: #4f4f4f;
   --table-grid-width: 0.05rem;
   --table-striped-color: rgba(255, 255, 255, 0.1);
+  --floating-shadow-player-bar: 0 0 1rem 0 rgba(255, 255, 255, 0.2);
+  --floating-shadow-cards: 0 0.5em 1em -0.125em rgba(255, 255, 255, 0.1), 0 0 0 0.1em rgba(255, 255, 255, 0.02);
 }
 
 body {
@@ -71,6 +73,64 @@ main {
 }
 
 /*
+--- Albums & Album Cards ---
+*/
+
+.albums {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: initial;
+}
+
+.albums .album-card {
+  flex: 0 0 14rem;
+  margin: calc(var(--size-default) * 3);
+  box-shadow: var(--floating-shadow-cards);
+}
+
+.albums .album-card .image-overlay-container {
+  position: relative;
+}
+
+.albums .album-card .image-overlay {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  transition: opacity .2s, visibility .2s;
+}
+
+.albums .album-card .image-overlay-container:hover .image-overlay {
+  visibility: visible;
+  opacity: 1;
+  backdrop-filter: blur(var(--blur-strength));
+}
+
+.albums .album-card .card-content {
+  padding: calc(var(--size-default) * 2) calc(var(--size-default) * 4);
+  cursor: pointer;
+}
+
+.albums .album-card .card-content h4 {
+  margin-top: calc(var(--size-default) * 3);
+  margin-bottom: 0;
+}
+
+.albums .album-card .card-content p {
+  margin: calc(var(--size-default) * 2) 0;
+}
+
+/*
 --- Img ---
 */
 
@@ -78,6 +138,7 @@ img {
   display: block;
   height: auto;
   width: 100%;
+  min-width: 100%;
   max-width: 100%;
 }
 
@@ -148,6 +209,7 @@ footer {
   bottom: 0;
   background-color: var(--blur-background-color);
   backdrop-filter: blur(var(--blur-strength));
+  box-shadow: var(--floating-shadow-player-bar);
 }
 
 footer p {
@@ -197,7 +259,7 @@ table {
   width: calc(100% - calc(var(--size-default) * 2));
   margin: var(--size-default);
   border-collapse: collapse;
-  text-align: left;
+  text-align: initial;
 }
 
 table td {

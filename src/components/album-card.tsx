@@ -15,33 +15,25 @@ export default function AlbumCard(props: {
         return await getFirstThumbnail(props.assets);
     });
     return (
-        <div class="card">
-            <div class="card-image">
-                <div class="image image-overlay-container">
-                    <figure class="image-overlay-image">
-                        {blobToImageWithDefault(thumbnail())}
-                    </figure>
-                    <div class="image-overlay">
-                        <PlayBtn outlined
-                            onClick={() => {
-                                props.onWantToPlay();
-                            }} />
-                        <InfoBtn outlined
-                            onClick={() => {
-                                props.onWantToSeeAlbum();
-                            }} />
-                    </div>
+        <div class="album-card">
+            <div class="image-overlay-container">
+                {blobToImageWithDefault(thumbnail())}
+                <div class="image-overlay">
+                    <PlayBtn outlined
+                        onClick={() => {
+                            props.onWantToPlay();
+                        }} />
+                    <InfoBtn outlined
+                        onClick={() => {
+                            props.onWantToSeeAlbum();
+                        }} />
                 </div>
             </div>
-            <div class="card-content is-clickable" onClick={() => {
+            <div class="card-content" onClick={() => {
                 props.onWantToSeeAlbum();
             }}>
-                <div class="media">
-                    <div class="media-content">
-                        <p class="title is-6">{props.album}</p>
-                        <p class="subtitle is-6">{props.albumArtist}</p>
-                    </div>
-                </div>
+                <h4>{props.album}</h4>
+                <p>{props.albumArtist}</p>
             </div>
         </div>
     );
