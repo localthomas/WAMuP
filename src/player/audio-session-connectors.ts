@@ -3,14 +3,14 @@ import { BackendStore } from "../backend/backend";
 import { registerMediaSessionHandlers, setMediaSessionMetadata } from "./media-session";
 import ReactiveAudioSession from "./reactive-audio-session";
 
-export default class AudioMediaSessionConnector {
+export namespace AudioSessionConnectors {
     /**
      * Connect an AudioSession to the MediaSession API.
      * Propagates any updates of the AudioSession to the MediaSession.
      * @param backend the backend to use for data fetching
      * @param audioSession the audio session for the connection
      */
-    public static connect(backend: BackendStore, audioSession: ReactiveAudioSession) {
+    export function mediaSessionConnect(backend: BackendStore, audioSession: ReactiveAudioSession) {
         const playbackQueueLength = createMemo(() => audioSession.getQueue()().length);
         const currentAsset = createMemo(() => audioSession.getAudioState()().assetID);
 
@@ -59,6 +59,29 @@ export default class AudioMediaSessionConnector {
             if (asset) {
                 const thumbnail = await backend.getThumbnail(assetID);
                 setMediaSessionMetadata(asset.metadata, thumbnail);
+            }
+        });
+    }
+
+    /**
+     * Connect an audio session to the current tab title.
+     * @param backend the backend to use for metadata
+     * @param audioSession the audio session for connecting
+     */
+    export function tabTitleConnect(backend: BackendStore, audioSession: ReactiveAudioSession) {
+        const currentAsset = createMemo(() => audioSession.getAudioState()().assetID);
+
+        // only react to changes in the current asset
+        createEffect(() => {
+            const asset = backend.get(currentAsset());
+            if (asset) {
+                // when updating the player, also update the title of the web page
+                const meta = asset.metadata;
+                if (meta) {
+                    document.title = meta.title + " • " + meta.artist + " • BBAP";
+                } else {
+                    document.title = "BBAP";
+                }
             }
         });
     }

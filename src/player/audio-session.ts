@@ -100,18 +100,7 @@ export class AudioSession {
      * @param newState the new audio player state
      * @param oldState the audio player state before the change
      */
-    private async onAudioPlayerStateChange(newState: AudioPlayerState, oldState: AudioPlayerState) {
-        // only react to changes in the current asset
-        if (oldState.assetID !== newState.assetID) {
-            // when updating the player, also update the title of the web page
-            const meta = this.backend.mustGet(newState.assetID).metadata;
-            if (meta) {
-                document.title = meta.title + " • " + meta.artist + " • BBAP";
-            } else {
-                document.title = "BBAP";
-            }
-        }
-
+    private onAudioPlayerStateChange(newState: AudioPlayerState, oldState: AudioPlayerState) {
         // pass event through to new listener if desired
         if (this.onStateChangeListener) {
             this.onStateChangeListener(newState, oldState);
