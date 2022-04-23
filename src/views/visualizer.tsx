@@ -27,7 +27,7 @@ export default function Visualizer(props: {
                 backend={props.backend}
                 audioState={props.audioSession.getAudioState()}
                 onWantsToSeek={(newTime) => {
-                    props.audioSession.setNewPlayerState({ currentTime: newTime });
+                    props.audioSession.setNewPlayerState(() => { return { currentTime: newTime } });
                 }} />
         </div>
     );

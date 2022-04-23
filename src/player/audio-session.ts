@@ -164,15 +164,7 @@ export class AudioSession {
      * Set the audio player state with new values.
      * @param newState the new state values
      */
-    public setNewPlayerState(newState: PlayerStateUpdate) {
-        this.audioPlayer.setNewPlayerState(() => newState);
-    }
-
-    /**
-     * Create a new player state based off an old state.
-     * @param newState calculates a new state based off an old state
-     */
-    public setNewPlayerStateFromOld(newState: (oldState: AudioPlayerState) => PlayerStateUpdate) {
+    public setNewPlayerState(newState: (oldState: AudioPlayerState) => PlayerStateUpdate) {
         this.audioPlayer.setNewPlayerState(newState);
     }
 

@@ -7,21 +7,27 @@ export function AudioControls(props: {
     audioSession: ReactiveAudioSession;
 }) {
     const setPlaying = (play: boolean) => {
-        props.audioSession.setNewPlayerState({
-            isPlaying: play
+        props.audioSession.setNewPlayerState(() => {
+            return {
+                isPlaying: play
+            }
         });
     };
 
     function seek(time: number) {
-        props.audioSession.setNewPlayerState({
-            currentTime: time
+        props.audioSession.setNewPlayerState(() => {
+            return {
+                currentTime: time
+            }
         });
     }
 
     function stop() {
-        props.audioSession.setNewPlayerState({
-            isPlaying: false,
-            currentTime: 0,
+        props.audioSession.setNewPlayerState(() => {
+            return {
+                isPlaying: false,
+                currentTime: 0,
+            }
         });
     }
 

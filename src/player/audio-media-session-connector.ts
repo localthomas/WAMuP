@@ -29,20 +29,22 @@ export default class AudioMediaSessionConnector {
         createEffect(() => {
             registerMediaSessionHandlers({
                 setPlaying: (playing) => {
-                    audioSession.setNewPlayerState({ isPlaying: playing });
+                    audioSession.setNewPlayerState(() => { return { isPlaying: playing } });
                 },
                 seekRelative: (offset) => {
-                    audioSession.setNewPlayerStateFromOld((oldState) => {
+                    audioSession.setNewPlayerState((oldState) => {
                         return { currentTime: oldState.currentTime + offset };
                     });
                 },
                 seekAbsolute: (time) => {
-                    audioSession.setNewPlayerState({ currentTime: time });
+                    audioSession.setNewPlayerState(() => { return { currentTime: time } });
                 },
                 stop: () => {
-                    audioSession.setNewPlayerState({
-                        isPlaying: false,
-                        currentTime: 0,
+                    audioSession.setNewPlayerState(() => {
+                        return {
+                            isPlaying: false,
+                            currentTime: 0,
+                        }
                     });
                 },
                 nextTrack: nextTrack(),

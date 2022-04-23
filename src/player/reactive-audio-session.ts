@@ -114,21 +114,9 @@ export default class ReactiveAudioSession {
      * Set the audio player state with new values.
      * @param newState the new state values
      */
-    public setNewPlayerState(newState: {
-        isPlaying?: boolean;
-        currentTime?: number;
-    }) {
+    public setNewPlayerState(newState: (oldState: AudioPlayerState) => PlayerStateUpdate) {
         this.audioSession.setNewPlayerState(newState);
     }
-
-    /**
-     * Create a new player state based off an old state.
-     * @param newState calculates a new state based off an old state
-     */
-    public setNewPlayerStateFromOld(newState: (oldState: AudioPlayerState) => PlayerStateUpdate) {
-        this.audioSession.setNewPlayerStateFromOld(newState);
-    }
-
 
     /**
      * Get the current state of the audio player.
