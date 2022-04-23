@@ -27,6 +27,7 @@ const App: Component = () => {
             const audioSession = ReactiveAudioSession.getInstance(backend.store);
             AudioSessionConnectors.mediaSessionConnect(backend.store, audioSession);
             AudioSessionConnectors.tabTitleConnect(backend.store, audioSession);
+            AudioSessionConnectors.keyboardConnect(audioSession);
             return layoutWithLoadedBackend(
                 defaultComponent,
                 backend.store,

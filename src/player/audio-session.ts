@@ -51,18 +51,6 @@ export class AudioSession {
         };
         this.playlist = new ObservableQueue(this.onPlaylistChange.bind(this));
 
-        // keyboard shortcuts
-        document.onkeydown = event => {
-            //32 = Space
-            if (event.keyCode === 32) {
-                this.audioPlayer.setNewPlayerState(oldState => {
-                    return {
-                        isPlaying: !oldState.isPlaying,
-                    };
-                });
-            }
-        }
-
         // setup for listening to changes of the audio player
         this.audioPlayer.onStateChangeListener = this.onAudioPlayerStateChange.bind(this);
 

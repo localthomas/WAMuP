@@ -85,4 +85,22 @@ export namespace AudioSessionConnectors {
             }
         });
     }
+
+    /**
+     * Use keyboard shortcuts for controlling the audio session.
+     * @param audioSession the audio session for controlling via keyboard
+     */
+    export function keyboardConnect(audioSession: ReactiveAudioSession) {
+        // keyboard shortcuts
+        document.onkeydown = event => {
+            //32 = Space
+            if (event.key === " ") {
+                audioSession.setNewPlayerState(oldState => {
+                    return {
+                        isPlaying: !oldState.isPlaying,
+                    };
+                });
+            }
+        }
+    }
 }
