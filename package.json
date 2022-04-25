@@ -6,9 +6,12 @@
   "scripts": {
     "get-commit-hash": "printf \"GIT_COMMIT_HASH=%s\n\" \"$(git describe --always --broken --dirty --abbrev=128 --long)\" > .env.local",
     "licenses": "npx license-checker-rseidelsohn --customPath licenses-format.json --json --out licenses.json",
-    "dev": "npm run licenses && npm run get-commit-hash && npx parcel",
+    "prerequisites": "npm run licenses && npm run get-commit-hash",
+    "predev": "npm run prerequisites",
+    "dev": "npx parcel",
     "check": "npx tsc --noEmit",
-    "build": "npm run licenses && npm run get-commit-hash && npx parcel build"
+    "prebuild": "npm run prerequisites",
+    "build": "npx parcel build --no-cache --log-level info"
   },
   "license": "MIT",
   "devDependencies": {
