@@ -11,7 +11,6 @@ export type PlayerStateUpdate = {
 /**
  * An `AudioSession` combines an `AudioPlayer`, a queue (as playlist), and a `BackendStore` into a single session
  * that holds all states for audio playback and playlist management.
- * It also sets the tab's title.
  */
 export class AudioSession {
     /** the static instance of this class, as it is meant to be used as a singleton */
