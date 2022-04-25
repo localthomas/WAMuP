@@ -1,4 +1,4 @@
-import { combineValuesIntoAnalysisWindows, loudnessOfAnalysisWindow, LoudnessOfAudioBufferWorkerInput, powersPerChannelOfFrame } from "../miscellaneous/loudness";
+import { combineValuesIntoAnalysisWindows, loudnessOfAnalysisWindow, LoudnessOfAudioBufferWorkerInput, powersPerChannelOfFrame } from "../miscellaneous/loudness-calculations";
 import { registerSingleWorkerFunction } from "./single-worker-base";
 
 registerSingleWorkerFunction(function (input: LoudnessOfAudioBufferWorkerInput): number[] {
