@@ -15,9 +15,18 @@ See the `flake.nix` file for more information.
 
 By default, [no type checking is done by parcel](https://parceljs.org/languages/typescript), but `npm run check` can be used as a manual substitute.
 
+Note that parcel performs [code splitting with shared bundles](https://parceljs.org/features/code-splitting/#shared-bundles) by default on production builds.
+This creates import errors (modules not found), because this project uses imports in WebWorker scripts and therefore requires that each worker file contains all the necessary code for execution.
+To disable shared bundles, the `package.json` configures the `@parcel/bundler-default` with size thresholds for single bundle files that are so big that no sharing should happen in practice.
+
 ### Available Scripts
 
 In the project directory, you can run:
+
+#### `npm run check`
+
+Run the TypeScript compiler and check for any errors.
+Can be started in watch mode via `npm run check -- --watch`.
 
 #### `npm run dev`
 

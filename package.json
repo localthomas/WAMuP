@@ -26,5 +26,10 @@
     "music-metadata-browser": "^2.5.5",
     "solid-app-router": "^0.3.2",
     "solid-js": "^1.3.12"
+  },
+  "@parcel/bundler-default": {
+    "minBundles": 999999999,
+    "minBundleSize": 999999999,
+    "maxParallelRequests": 1
   }
 }
