@@ -35,6 +35,7 @@ export default function Default(props: {
                 <br />
                 <small>Git commit: {process.env.GIT_COMMIT_HASH || <i>unknown</i>}</small>
             </p>
+            {/* TODO add a reload button so that a PWA is updatable by the user */}
         </div>
     );
 }

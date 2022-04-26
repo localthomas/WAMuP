@@ -5,11 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <link rel="shortcut icon" type="image/svg+xml" href="/src/assets/favicon.svg" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     <title>BBAP</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script src="./index.tsx" type="module"></script>
+    <script>
+      // use a string so that parcel leaves this as is
+      const sw = "service-worker.js";
+      navigator.serviceWorker
+      .register(sw)
+      .then(registration => {
+        registration.onupdatefound = () => {
+          const installingWorker = registration.installing;
+          if (installingWorker == null) {
+            return;
+          }
+          installingWorker.onstatechange = () => {
+            if (installingWorker.state === "installed") {
+              if (navigator.serviceWorker.controller) {
+                console.log("New content is available and will be used when all tabs for this page are closed.");
+              } else {
+                console.log("Content is cached for offline use.");
+              }
+            }
+          };
+        };
+      });
+    </script>
   </body>
 </html>
