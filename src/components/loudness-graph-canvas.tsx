@@ -75,7 +75,7 @@ export default function LoudnessGraphCanvas(props: {
         // use the right edge of the marker rect as the current time value
         drawCtx.fillRect((relativeCurrentTime * canvas.width) - markerWidth, 0, markerWidth, canvas.height);
         // the white marker line for current playback position
-        drawCtx.fillStyle = "rgba(255, 255, 255, 1)";
+        drawCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-color');
         drawCtx.fillRect((relativeCurrentTime * canvas.width), 0, 1, canvas.height);
     }
 
