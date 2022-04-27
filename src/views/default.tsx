@@ -5,6 +5,7 @@ import Overview from "../components/overview";
 import SourceDirectoryPicker from "../components/source-dir-picker";
 
 import packageInfo from '../../package.json';
+import PWAInstallButton from "../components/pwa-install-button";
 
 export default function Default(props: {
     backendSignal: Signal<BackendState>
@@ -26,16 +27,16 @@ export default function Default(props: {
                 The state of the application is only stored in this browser tab, so other tabs do not have the same audio player or use the same folder for analysis.
                 Note that reloading the current page clears the current tab, so all state—including the playlist—is lost.
             </p>
-            <details>
-                <summary><b>Third Party Licenses</b></summary>
-                <Licenses />
-            </details>
+            <PWAInstallButton />
             <p>
                 <small>Version: {packageInfo.version || <i>unknown</i>}</small>
                 <br />
                 <small>Git commit: {process.env.GIT_COMMIT_HASH || <i>unknown</i>}</small>
             </p>
-            {/* TODO add a reload button so that a PWA is updatable by the user */}
+            <details>
+                <summary><b>Third Party Licenses</b></summary>
+                <Licenses />
+            </details>
         </div>
     );
 }
