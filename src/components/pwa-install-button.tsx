@@ -4,30 +4,39 @@ import PWAManager from "../miscellaneous/pwa";
 export default function PWAInstallButton() {
     const pwaManager = PWAManager.getInstance();
 
-    const buttonClass = "pwa-install";
-    const buttonText = "Install This App";
-
     const buttonData = createMemo(() => {
         if (pwaManager.readyForPrompt()()) {
             return {
-                text: buttonText,
                 disabled: false,
                 onclick: () => { pwaManager.promptForPWAInstall() },
             };
         } else {
             return {
-                text: `${buttonText} (not supported in this browser)`,
                 disabled: true,
             }
         }
     });
 
+    const disabledText = createMemo(() => {
+        if (pwaManager.readyForPrompt()()) {
+            return <></>;
+        } else {
+            return <p>Installing this web application as a progressive web app is not supported in this browser or the app is already installed.</p>
+        }
+    });
+
     return (
-        <button class={buttonClass}
-            disabled={buttonData().disabled}
-            onclick={() => { buttonData().onclick?.() }}
-        >
-            {buttonData().text}
-        </button>
+        <>
+            {disabledText()}
+            <button
+                disabled={buttonData().disabled}
+                onclick={() => { buttonData().onclick?.() }}
+            >
+                Install This App
+            </button>
+            <button onclick={() => { window.location.reload(); }}>
+                Reload This App
+            </button>
+        </>
     );
 }
