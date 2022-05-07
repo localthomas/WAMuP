@@ -2,6 +2,7 @@
   "name": "bbap",
   "version": "0.1.0",
   "description": "Browser Based Audio Player",
+  "license": "MIT",
   "source": "src/index.html",
   "scripts": {
     "get-commit-hash": "printf \"GIT_COMMIT_HASH=%s\n\" \"$(git describe --always --broken --dirty --abbrev=128 --long)\" > .env.local",
@@ -15,7 +16,6 @@
     "build": "parcel build --no-cache --log-level info",
     "postbuild": "workbox generateSW"
   },
-  "license": "MIT",
   "devDependencies": {
     "@parcel/packager-raw-url": "^2.4.0",
     "@parcel/transformer-webmanifest": "^2.4.0",
