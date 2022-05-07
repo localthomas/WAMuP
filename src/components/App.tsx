@@ -1,4 +1,4 @@
-import { Component, createMemo, createSignal, JSX } from 'solid-js';
+import { Component, createMemo, createResource, createSignal, JSX } from 'solid-js';
 import { Navigate, Routes, Route } from "solid-app-router";
 import { BackendState, BackendStore } from '../backend/backend';
 import Default from '../views/default';
@@ -14,12 +14,13 @@ import PlayerBar from './player-bar';
 import ReactiveAudioSession from '../player/reactive-audio-session';
 import { AudioSessionConnectors } from '../player/audio-session-connectors';
 import Licenses from '../views/licenses';
+import LoadingSpinnerSmall from './loading-spinner-small';
 
 const App: Component = () => {
     const [backendState, setBackendState] = createSignal<BackendState>({ tag: "None" });
 
     const defaultRoute = <Route path="/" element={<Default backendSignal={[backendState, setBackendState]} />} />;
-    const licensesRoute = <Route path="/licenses" element={<Licenses />} />;
+    const licensesRoute = <Route path="/licenses" element={<LicensesWrapper />} />;
     const fallbackRoute = <Route path="/*all" element={<Navigate href={"/"} />} />;
     const alwaysPresentRoutes = [defaultRoute, licensesRoute, fallbackRoute];
 
@@ -50,6 +51,30 @@ const App: Component = () => {
 };
 
 export default App;
+
+/**
+ * Loads a `Licenses` component at runtime, i.e. with code splitting.
+ * @returns the licenses component
+ */
+const LicensesWrapper: Component = () => {
+    const [component] = createResource(async () => {
+        const licensesModule = (
+            (await import('../views/licenses')) as unknown
+        ) as any;
+        const licenses = licensesModule.default as typeof Licenses;
+        return licenses();
+    });
+
+    const page = createMemo(() => {
+        if (component.loading) {
+            return <LoadingSpinnerSmall />;
+        } else {
+            return component();
+        }
+    });
+
+    return page;
+}
 
 /**
  * Creates a new layout with all views that should be available as soon as a backend was loaded.

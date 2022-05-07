@@ -17,6 +17,7 @@ export default function Licenses() {
     return (
         <>
             <h1>Third Party Licenses</h1>
+            <a href="/">Back To Start</a>
             <table>
                 <tbody>
                     <tr>
