@@ -13,11 +13,15 @@ import Visualizer from '../views/visualizer';
 import PlayerBar from './player-bar';
 import ReactiveAudioSession from '../player/reactive-audio-session';
 import { AudioSessionConnectors } from '../player/audio-session-connectors';
+import Licenses from '../views/licenses';
 
 const App: Component = () => {
     const [backendState, setBackendState] = createSignal<BackendState>({ tag: "None" });
 
-    const defaultComponent = <Default backendSignal={[backendState, setBackendState]} />;
+    const defaultRoute = <Route path="/" element={<Default backendSignal={[backendState, setBackendState]} />} />;
+    const licensesRoute = <Route path="/licenses" element={<Licenses />} />;
+    const fallbackRoute = <Route path="/*all" element={<Navigate href={"/"} />} />;
+    const alwaysPresentRoutes = [defaultRoute, licensesRoute, fallbackRoute];
 
     // Switch the current page from a simple default view to a proper view with navigation,
     // if the backend was loaded.
@@ -29,12 +33,16 @@ const App: Component = () => {
             AudioSessionConnectors.tabTitleConnect(backend.store, audioSession);
             AudioSessionConnectors.keyboardConnect(audioSession);
             return layoutWithLoadedBackend(
-                defaultComponent,
                 backend.store,
                 audioSession,
+                alwaysPresentRoutes,
             );
         } else {
-            return defaultComponent;
+            return (
+                <main>
+                    {createRoutes(alwaysPresentRoutes)}
+                </main>
+            );
         }
     });
 
@@ -43,79 +51,94 @@ const App: Component = () => {
 
 export default App;
 
-
-function layoutWithLoadedBackend(defaultComponent: JSX.Element, backendStore: BackendStore, audioSession: ReactiveAudioSession): JSX.Element {
+/**
+ * Creates a new layout with all views that should be available as soon as a backend was loaded.
+ * @param backendStore the backend store that must be initialized
+ * @param audioSession the audio session to use
+ * @param additionalRoutes routes that should be enabled in addition to the newly created ones
+ * @returns a finished page layout (i.e. for the root element)
+ */
+function layoutWithLoadedBackend(backendStore: BackendStore, audioSession: ReactiveAudioSession, additionalRoutes: JSX.Element[]): JSX.Element {
     // page setup, if a fully loaded backend is available
+
+    const routes = [
+        <Route path="/assets/:id" element={
+            <Asset
+                backend={backendStore}
+                onPlayNow={audioSession.playNow.bind(audioSession)}
+                onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
+            />}
+        />,
+        <Route path="/queue" element={
+            <Queue
+                backend={backendStore}
+                playlist={audioSession.getQueue()()}
+                onRemoveFromPlaylist={audioSession.removeFromPlaylist.bind(audioSession)}
+                onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
+            />}
+        />,
+        <Route path="/visualizer" element={
+            <Visualizer
+                backend={backendStore}
+                audioSession={audioSession}
+            />}
+        />,
+        <Route path="/albums" element={
+            <Albums
+                backend={backendStore}
+                onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
+            />}
+        />,
+        <Route path="/albums/:id" element={
+            <Album
+                backend={backendStore}
+                onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
+                currentAsset={audioSession.getAudioState()().assetID}
+                onPlayNow={audioSession.playNow.bind(audioSession)}
+                onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
+            />}
+        />,
+        <Route path="/artists" element={
+            <Artists
+                backend={backendStore}
+            />}
+        />,
+        <Route path="/artists/:id" element={
+            <Artist
+                backend={backendStore}
+                currentAsset={audioSession.getAudioState()().assetID}
+                onPlayNow={audioSession.playNow.bind(audioSession)}
+                onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
+            />}
+        />,
+        additionalRoutes,
+    ];
 
     // Note: if adding methods of `audioSession` as callbacks, use `.bind(audioSession)` so that `this` is well defined
     return (
         <>
             <Navigation />
             <main>
-                <Routes>
-                    <Route path="/assets/:id" element={
-                        <Asset
-                            backend={backendStore}
-                            onPlayNow={audioSession.playNow.bind(audioSession)}
-                            onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
-                        />}
-                    />
-                    <Route path="/queue" element={
-                        <Queue
-                            backend={backendStore}
-                            playlist={audioSession.getQueue()()}
-                            onRemoveFromPlaylist={audioSession.removeFromPlaylist.bind(audioSession)}
-                            onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
-                        />}
-                    />
-                    <Route path="/visualizer" element={
-                        <Visualizer
-                            backend={backendStore}
-                            audioSession={audioSession}
-                        />}
-                    />
-                    <Route path="/albums" element={
-                        <Albums
-                            backend={backendStore}
-                            onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
-                        />}
-                    />
-                    <Route path="/albums/:id" element={
-                        <Album
-                            backend={backendStore}
-                            onReplacePlaylist={audioSession.setNewPlaylist.bind(audioSession)}
-                            currentAsset={audioSession.getAudioState()().assetID}
-                            onPlayNow={audioSession.playNow.bind(audioSession)}
-                            onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
-                        />}
-                    />
-                    <Route path="/artists" element={
-                        <Artists
-                            backend={backendStore}
-                        />}
-                    />
-                    <Route path="/artists/:id" element={
-                        <Artist
-                            backend={backendStore}
-                            currentAsset={audioSession.getAudioState()().assetID}
-                            onPlayNow={audioSession.playNow.bind(audioSession)}
-                            onAppendToPlaylist={audioSession.appendToPlaylist.bind(audioSession)}
-                        />}
-                    />
-                    <Route path="/" element={
-                        defaultComponent}
-                    />
-                    <Route path="/*all" element={
-                        <Navigate
-                            href={"/"}
-                        />}
-                    />
-                </Routes>
+                {createRoutes(routes)}
             </main>
             <PlayerBar
                 audioSession={audioSession}
                 backend={backendStore}
             />
         </>
+    );
+}
+
+/**
+ * Use a list of `Route` elements to create a router. Note that the order of the elements matters.
+ * @param routes the list of `Route` elements
+ * @returns the finished `Routes` setup
+ */
+function createRoutes(routes: JSX.Element[]): JSX.Element {
+    // Note: use flat, as `Routes` only supports `Route` elements when they are *direct* children
+    return (
+        <Routes>
+            {routes.flat(9999)}
+        </Routes>
     );
 }

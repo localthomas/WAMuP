@@ -16,6 +16,7 @@ export default function Licenses() {
     const unknown = () => <i>unknown</i>;
     return (
         <>
+            <h1>Third Party Licenses</h1>
             <table>
                 <tbody>
                     <tr>

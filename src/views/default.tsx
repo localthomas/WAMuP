@@ -1,11 +1,11 @@
 import { Signal } from "solid-js";
+import { NavLink } from "solid-app-router";
 import { BackendState } from "../backend/backend";
-import Licenses from "../components/licenses";
 import Overview from "../components/overview";
 import SourceDirectoryPicker from "../components/source-dir-picker";
+import PWAInstallButton from "../components/pwa-install-button";
 
 import packageInfo from '../../package.json';
-import PWAInstallButton from "../components/pwa-install-button";
 
 export default function Default(props: {
     backendSignal: Signal<BackendState>
@@ -33,10 +33,7 @@ export default function Default(props: {
                 <br />
                 <small>Git commit: {process.env.GIT_COMMIT_HASH || <i>unknown</i>}</small>
             </p>
-            <details>
-                <summary><b>Third Party Licenses</b></summary>
-                <Licenses />
-            </details>
+            <NavLink href="/licenses">Third Party Licenses</NavLink>
         </div>
     );
 }
