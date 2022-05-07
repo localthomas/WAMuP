@@ -1,8 +1,8 @@
-# SPDX-FileCopyrightText: 2021 localthomas
+# SPDX-FileCopyrightText: 2022 localthomas
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 {
-  description = "This is a standalone binary that listens on the system bus and talks to systemd to identify failed units.";
+  description = "This is a music player realized as web app";
 
   inputs = {
     # for eachSystem function
