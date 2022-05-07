@@ -1,4 +1,4 @@
-import { NavLink } from "solid-app-router";
+import { Link } from "solid-app-router";
 import { createMemo, For } from "solid-js";
 import { Asset, BackendStore } from "../backend/backend";
 
@@ -30,7 +30,7 @@ export default function Artists(props: {
                     <For each={list()} fallback={<></>}>
                         {(artist) => (
                             <tr>
-                                <th><NavLink href={"/artists/" + encodeURIComponent(artist.name)}>{artist.name}</NavLink></th>
+                                <th><Link href={"/artists/" + encodeURIComponent(artist.name)}>{artist.name}</Link></th>
                                 <td>{artist.info.numTitles}</td>
                             </tr>
                         )}

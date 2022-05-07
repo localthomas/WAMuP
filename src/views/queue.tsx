@@ -1,4 +1,4 @@
-import { NavLink } from "solid-app-router";
+import { Link } from "solid-app-router";
 import { BackendStore } from "../backend/backend";
 import { AssetDetailed } from "../components/asset-detailed";
 import { CrossBtn } from "../components/icon-btns";
@@ -57,14 +57,14 @@ export default function Queue(props: {
                             <tr>
                                 <td>{index + 1}</td>
                                 <td>
-                                    <NavLink href={"/assets/" + encodeURIComponent(asset.id)}>
+                                    <Link href={"/assets/" + encodeURIComponent(asset.id)}>
                                         {asset.meta.title}
-                                    </NavLink>
+                                    </Link>
                                 </td>
                                 <td>
-                                    <NavLink href={"/artists/" + encodeURIComponent(asset.meta.artist)}>
+                                    <Link href={"/artists/" + encodeURIComponent(asset.meta.artist)}>
                                         {asset.meta.artist}
-                                    </NavLink>
+                                    </Link>
                                 </td>
                                 <td class="fixed-width">
                                     <div>

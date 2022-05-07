@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "solid-app-router";
+import { Link, useNavigate } from "solid-app-router";
 import { Accessor } from "solid-js";
 import { blobToImageSrcWithDefault } from "../miscellaneous/images";
 import { InfoBtn, PlayBtn } from "./icon-btns";
@@ -28,14 +28,14 @@ export default function AlbumCard(props: {
             </div>
             <div class="card-content">
                 <h4>
-                    <NavLink href={"/albums/" + encodeURIComponent(props.album)}>
+                    <Link href={"/albums/" + encodeURIComponent(props.album)}>
                         {props.album}
-                    </NavLink>
+                    </Link>
                 </h4>
                 <p>
-                    <NavLink href={"/artists/" + encodeURIComponent(props.albumArtist)}>
+                    <Link href={"/artists/" + encodeURIComponent(props.albumArtist)}>
                         {props.albumArtist}
-                    </NavLink>
+                    </Link>
                 </p>
             </div>
         </div>

@@ -1,4 +1,4 @@
-import { NavLink } from 'solid-app-router';
+import { Link } from 'solid-app-router';
 import { JSXElement } from 'solid-js';
 import { MetadataWithID } from '../backend/metadata';
 import { secondsToString } from '../miscellaneous/time-conversion';
@@ -32,17 +32,17 @@ export default function TitleList(props: TitleListProps) {
             fixedWidth: true,
         },
         {
-            value: (asset) => <NavLink href={"/assets/" + encodeURIComponent(asset.id)}>{asset.meta.title}</NavLink>,
+            value: (asset) => <Link href={"/assets/" + encodeURIComponent(asset.id)}>{asset.meta.title}</Link>,
             columnName: "Title",
             fixedWidth: false,
         },
         {
-            value: (asset) => <NavLink href={"/artists/" + encodeURIComponent(asset.meta.artist)}>{asset.meta.artist}</NavLink>,
+            value: (asset) => <Link href={"/artists/" + encodeURIComponent(asset.meta.artist)}>{asset.meta.artist}</Link>,
             columnName: "Artist",
             fixedWidth: false,
         },
         {
-            value: (asset) => <NavLink href={"/albums/" + encodeURIComponent(asset.meta.album)}>{asset.meta.album}</NavLink>,
+            value: (asset) => <Link href={"/albums/" + encodeURIComponent(asset.meta.album)}>{asset.meta.album}</Link>,
             columnName: "Album",
             fixedWidth: false,
         },

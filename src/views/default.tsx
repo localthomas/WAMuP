@@ -1,5 +1,5 @@
 import { Signal } from "solid-js";
-import { NavLink } from "solid-app-router";
+import { Link } from "solid-app-router";
 import { BackendState } from "../backend/backend";
 import Overview from "../components/overview";
 import SourceDirectoryPicker from "../components/source-dir-picker";
@@ -33,7 +33,7 @@ export default function Default(props: {
                 <br />
                 <small>Git commit: {process.env.GIT_COMMIT_HASH || <i>unknown</i>}</small>
             </p>
-            <NavLink href="/licenses">Third Party Licenses</NavLink>
+            <Link href="/licenses">Third Party Licenses</Link>
         </div>
     );
 }

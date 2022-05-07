@@ -1,4 +1,4 @@
-import { NavLink } from "solid-app-router";
+import { Link } from "solid-app-router";
 import { createMemo } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import { Metadata } from "../backend/metadata";
@@ -40,9 +40,9 @@ export default function PlayerBar(props: {
             <div class="container">
                 {playlistLength() > maxDisplayedPlaylist ?
                     <p>
-                        <NavLink href="/queue">
+                        <Link href="/queue">
                             {playlistLength() - maxDisplayedPlaylist} more...
-                        </NavLink>
+                        </Link>
                     </p>
                     :
                     ""}
