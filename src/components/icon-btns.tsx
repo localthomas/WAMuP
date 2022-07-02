@@ -1,6 +1,6 @@
 //Icons used from Google Material Icons (https://material.io/icons/) (<svg>) with Apache 2.0 License and changes to the size
 
-import { Component, JSX } from "solid-js";
+import { children, JSX, ParentComponent } from "solid-js";
 
 type IconBtnProps = {
     /**
@@ -25,7 +25,8 @@ type IconBtnProps = {
     onClick: () => void;
 }
 
-const IconBtn: Component<IconBtnProps> = (props) => {
+const IconBtn: ParentComponent<IconBtnProps> = (props) => {
+    const resolvedChildren = children(() => props.children);
     return (
         <button class={
             "is-svg-btn "
@@ -37,7 +38,7 @@ const IconBtn: Component<IconBtnProps> = (props) => {
             onClick={() => {
                 props.onClick();
             }}>
-            {props.children}
+            {resolvedChildren()}
         </button>
     );
 }

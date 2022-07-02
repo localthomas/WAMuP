@@ -31,6 +31,8 @@ export default function SourceDirectoryPicker(props: {
                 return backend.directory;
             case "Backend":
                 return backend.store.directory;
+            default:
+                return "";
         }
     });
 

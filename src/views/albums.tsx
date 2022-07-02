@@ -4,7 +4,7 @@ import { Asset, BackendStore } from "../backend/backend";
 import AlbumCard from "../components/album-card";
 import { getAlbumList, getFirstThumbnail } from "./album";
 
-export default function AlbumsCards(props: {
+export default function Albums(props: {
     backend: BackendStore;
     onReplacePlaylist: (newList: string[]) => void;
 }) {

@@ -1,4 +1,4 @@
-import { Component, createResource } from "solid-js";
+import { children, createResource, ParentComponent } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import { blobToImageSrcWithDefault } from "../miscellaneous/images";
 
@@ -7,7 +7,9 @@ export type AssetDetailedProps = {
     assetID: string;
 }
 
-export const AssetDetailed: Component<AssetDetailedProps> = (props) => {
+export const AssetDetailed: ParentComponent<AssetDetailedProps> = (props) => {
+    const resolvedChildren = children(() => props.children);
+
     const asset = props.backend.get(props.assetID);
     if (!asset) {
         throw "unreachable";
@@ -62,7 +64,7 @@ export const AssetDetailed: Component<AssetDetailedProps> = (props) => {
                         </tr>
                     </tbody>
                 </table>
-                {props.children}
+                {resolvedChildren()}
             </div>
         </div>
     );
