@@ -1,4 +1,4 @@
-# BBAP
+# WAMuP
 
 This is a private project and currently in development.
 Do not expect any features to work.

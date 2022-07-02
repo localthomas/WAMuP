@@ -1,7 +1,7 @@
 {
-  "name": "bbap",
+  "name": "wamup",
   "version": "0.1.0",
-  "description": "Browser Based Audio Player",
+  "description": "Web App Music Player",
   "license": "MIT",
   "source": "src/index.html",
   "scripts": {

@@ -78,9 +78,9 @@ export namespace AudioSessionConnectors {
                 // when updating the player, also update the title of the web page
                 const meta = asset.metadata;
                 if (meta) {
-                    document.title = meta.title + " • " + meta.artist + " • BBAP";
+                    document.title = meta.title + " • " + meta.artist + " • WAMuP";
                 } else {
-                    document.title = "BBAP";
+                    document.title = "WAMuP";
                 }
             }
         });

@@ -1,6 +1,6 @@
 {
-    "short_name": "BBAP",
-    "name": "Browser Based Audio Player",
+    "short_name": "WAMuP",
+    "name": "Web App Music Player",
     "icons": [
         {
             "src": "assets/icon_x192.png",

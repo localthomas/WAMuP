@@ -14,7 +14,7 @@ export default function Default(props: {
 
     return (
         <div class="container">
-            <h1>BBAP</h1>
+            <h1>WAMuP</h1>
             <Overview backend={backend}></Overview>
             <h2>Usage</h2>
             <p>
