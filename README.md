@@ -1,9 +1,14 @@
 # BBAP
 
-This is a private project and currently in heavy development.
+This is a private project and currently in development.
 Do not expect any features to work.
+There is no guarantee that issues and pull requests will be answered.
 
 This project currently only works on [Chromium based browsers](https://caniuse.com/native-filesystem-api), as it uses the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API).
+
+## Known Issues
+
+When loading a large file (duration > 1h) in the visualization tab, the browser tab might crash after a while with an out of memory error.
 
 ## Development
 
@@ -20,6 +25,8 @@ This creates import errors (modules not found), because this project uses import
 To disable shared bundles, the `package.json` configures the `@parcel/bundler-default` with size thresholds for single bundle files that are so big that no sharing should happen in practice.
 
 ### Available Scripts
+
+First run `npm install` to download all dependencies of this project.
 
 In the project directory, you can run:
 
