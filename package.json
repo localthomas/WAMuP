@@ -1,6 +1,6 @@
 {
   "name": "wamup",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Web App Music Player",
   "license": "MIT",
   "source": "src/index.html",
@@ -13,7 +13,7 @@
     "dev": "parcel",
     "check": "tsc --noEmit",
     "prebuild": "npm run prerequisites",
-    "build": "parcel build --no-cache --log-level info",
+    "build": "parcel build --no-cache --log-level info --public-url ./",
     "postbuild": "workbox generateSW"
   },
   "devDependencies": {
