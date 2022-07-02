@@ -163,7 +163,7 @@ function createRoutes(routes: JSX.Element[]): JSX.Element {
     // Note: use flat, as `Routes` only supports `Route` elements when they are *direct* children
     return (
         <Routes>
-            {routes.flat(9999)}
+            {routes.flat(20)}
         </Routes>
     );
 }
