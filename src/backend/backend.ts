@@ -1,3 +1,4 @@
+import { SimpleCache } from "../miscellaneous/cache";
 import { Progress } from "../miscellaneous/parallel";
 import { createPerFileData } from "./file-handling";
 import { getThumbnail, Metadata, MetadataWithID } from "./metadata";
@@ -25,10 +26,15 @@ export class BackendStore {
      * The name of the directory that was used to create this backend.
      */
     readonly directory: string;
+    /**
+     * Stores thumbnails for assets in a cache to prevent re-processing.
+     */
+    private thumbnailCache: SimpleCache<string, Blob | undefined>;
 
     constructor(directory: string, assets: Map<string, Asset>) {
         this.directory = directory;
         this.assets = assets;
+        this.thumbnailCache = new SimpleCache();
     }
 
     /**
@@ -101,8 +107,10 @@ export class BackendStore {
      */
     public async getThumbnail(assetID: string): Promise<Blob | undefined> {
         const asset = this.mustGet(assetID);
-        const data = new Uint8Array(await asset.file.arrayBuffer());
-        return getThumbnail(data, asset.file.type);
+        return this.thumbnailCache.processOrGet(assetID, async () => {
+            const data = new Uint8Array(await asset.file.arrayBuffer());
+            return getThumbnail(data, asset.file.type);
+        });
     }
 
     /**

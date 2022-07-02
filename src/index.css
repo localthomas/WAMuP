@@ -110,6 +110,10 @@ main {
 
 .albums .album-card .image-overlay-container {
   position: relative;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .albums .album-card .image-overlay {
