@@ -1,8 +1,14 @@
 {
   "name": "wamup",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Web App Music Player",
   "license": "MIT",
+  "author": "localthomas",
+  "homepage": "https://localthomas.github.io/WAMuP/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/localthomas/WAMuP.git"
+  },
   "source": "src/index.html",
   "scripts": {
     "get-commit-hash": "printf \"GIT_COMMIT_HASH=%s\n\" \"$(git describe --always --broken --dirty --abbrev=128 --long)\" > .env.local",

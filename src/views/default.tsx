@@ -29,6 +29,8 @@ export default function Default(props: {
             </p>
             <PWAInstallButton />
             <p>
+                <small><a href="https://github.com/localthomas/WAMuP" target="_blank">Source Code</a></small>
+                <br />
                 <small>Version: {packageInfo.version || <i>unknown</i>}</small>
                 <br />
                 <small>Git commit: {process.env.GIT_COMMIT_HASH || <i>unknown</i>}</small>
