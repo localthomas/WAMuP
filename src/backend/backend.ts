@@ -188,14 +188,14 @@ export class Asset {
  * Creates a new backend using the files in the given directory.
  * It is expected that the defined directory contains audio files,
  * because only audio files are used when creating the backend.
- * @param directoryHandle the directory where audio files reside
+ * @param files a list of files (possibly containing audio files)
+ * @param rootDirName is the string name of the root directory of the files and can be empty
+ * @param progressCallback is a callback that is periodically called when further progress was made
  * @returns the generated Backend with data
  */
-export async function createBackend(directoryHandle: FileSystemDirectoryHandle, progressCallback: (progress: Progress) => void): Promise<BackendState> {
+export async function createBackend(files: File[], rootDirName: string, progressCallback: (progress: Progress) => void): Promise<BackendState> {
     // only use audio files in further processing
-    const allFiles = await (
-        await getAllFiles(directoryHandle)
-    ).filter(isAudioFile);
+    const allFiles = files.filter(isAudioFile);
 
     // create a hash mapping, i.e. address files via hashes
     let assets = new Map<string, Asset>();
@@ -216,7 +216,7 @@ export async function createBackend(directoryHandle: FileSystemDirectoryHandle, 
         assets.set(hash, asset);
     }
 
-    return { tag: "Backend", store: new BackendStore(directoryHandle.name, assets) };
+    return { tag: "Backend", store: new BackendStore(rootDirName, assets) };
 }
 
 /**

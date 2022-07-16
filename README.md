@@ -4,7 +4,8 @@ This is a private project and currently in development.
 Do not expect any features to work.
 There is no guarantee that issues and pull requests will be answered.
 
-This project currently only works on [Chromium based browsers](https://caniuse.com/native-filesystem-api), as it uses the [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API).
+This project is currently mainly tested on Chromium based browsers, but it should work in other browsers as well.
+Some details in the interface might differ in appearance between different engines.
 
 ## Known Issues
 
