@@ -1,6 +1,6 @@
 import { Accessor, createEffect, createMemo, createResource, createSignal } from "solid-js";
 import { BackendStore } from "../backend/backend";
-import { getAudioBufferFromBlobWithEBUR128Filter } from "../miscellaneous/audio";
+import { getLoudnessInformationOfFile } from "../miscellaneous/audio";
 import { getIntegratedLoudness, getLoudnessRange, getShortTermLoudnessWithRange } from "../miscellaneous/loudness";
 import { AudioPlayerState } from "../player/audio-player";
 import LoadingSpinnerSmall from "./loading-spinner-small";
@@ -21,7 +21,7 @@ export default function LoudnessGraph(props: {
     const [audioBufferForCurrentAsset] = createResource(currentAsset, async (newAsset: string) => {
         const asset = props.backend.get(newAsset);
         if (asset) {
-            return await getAudioBufferFromBlobWithEBUR128Filter(asset.file);
+            return await getLoudnessInformationOfFile(asset.file);
         }
     });
 

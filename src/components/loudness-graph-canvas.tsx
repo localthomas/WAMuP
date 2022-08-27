@@ -3,12 +3,16 @@ import { AudioPlayerState } from "../player/audio-player";
 import LoadingSpinnerSmall from "./loading-spinner-small";
 
 export type LoudnessAndRange = {
-    loudness: number; // LUFS (<= 0)
-    range: number; // LU (>= 0)
+    /** LUFS (<= 0) */
+    loudness: number;
+    /** LU (>= 0) */
+    range: number;
 }
 
-export const GRAPH_MINIMAL_LOUDNESS = -35; // LUFS
-export const GRAPH_GREEN_LOUDNESS_RANGE = 6; // LU
+/** LUFS */
+export const GRAPH_MINIMAL_LOUDNESS = -35;
+/** LU */
+export const GRAPH_GREEN_LOUDNESS_RANGE = 6;
 
 /**
  * Plots the loudness [LUFS] (which means negative) values as y-axis with time on the x-axis.

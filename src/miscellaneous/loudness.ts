@@ -1,14 +1,13 @@
 import { LoudnessAndRange } from "../components/loudness-graph-canvas";
-import { runSingleWorker } from "./concurrent";
-import { do10log10, Frame, LoudnessOfAudioBufferWorkerInput, undo10log10 } from "./loudness-calculations";
+import { combineValuesIntoAnalysisWindows, do10log10, loudnessOfAnalysisWindow, PowerOfFrame, undo10log10 } from "./loudness-calculations";
 
 /**
  * Analyzes the given audio data and calculates the loudness-range based on the algorithm presented in EBU Tech 3342.
  * Note: This function is not equal to the presented MatLab-Function "LoudnessRange". Instead it uses raw audio data.
- * @param audio the audioBuffer to analyze
+ * @param frames100ms a list of all 100ms loudness frames
  */
-export async function getLoudnessRange(audio: AudioBuffer): Promise<number> {
-    const shortLoudness = await shortTermLoudness(audio);
+export async function getLoudnessRange(frames100ms: PowerOfFrame[]): Promise<number> {
+    const shortLoudness = await shortTermLoudness(frames100ms);
 
     const ABS_THRESHOLD = -70; // LUFS (= absolute measure)
     const REL_THRESHOLD = -20; // LU   (= relative measure)
@@ -40,10 +39,10 @@ export async function getLoudnessRange(audio: AudioBuffer): Promise<number> {
 
 /**
  * Analyzes the given audio data and calculates the integrated loudness as per ITU-R BS.1770-4.
- * @param audio the audio buffer to analyze
+ * @param frames100ms a list of all 100ms loudness frames
  */
-export async function getIntegratedLoudness(audio: AudioBuffer): Promise<number> {
-    const frames = await framesOf100ms(audio);
+export async function getIntegratedLoudness(frames100ms: PowerOfFrame[]): Promise<number> {
+    const frames = frames100msToLoudness(frames100ms, 0.1);
 
     // filter the blocks as per ITU-R BS.1770-4 with 75% overlap (3 frames with 100ms frames)
     const numFramesOfOneGatingBlock = 4;
@@ -84,43 +83,33 @@ export async function getIntegratedLoudness(audio: AudioBuffer): Promise<number>
  * Creates a list of short-term loudness values (3s window) of the raw audio data.
  * @param audio the audio buffer to use as raw audio source
  */
-async function shortTermLoudness(audio: AudioBuffer): Promise<number[]> {
-    // equals a sampling rate of short term loudness of 10Hz as per EBU Tech 3342
-    const FRAME_SIZE_S = 0.1;
+async function shortTermLoudness(frames100ms: PowerOfFrame[]): Promise<number[]> {
     // the length of the window in seconds to be used for calculating the short term loudness
     const ANALYSIS_WINDOW_SIZE_S = 3;
-    // use a weighting of 1 for each channel
-    const weighting = () => 1;
 
-    return loudnessOfAudioBuffer(audio, FRAME_SIZE_S, ANALYSIS_WINDOW_SIZE_S, weighting);
+    return frames100msToLoudness(frames100ms, ANALYSIS_WINDOW_SIZE_S);
 }
 
 /**
  * Creates a list of short-term loudness values of the raw audio data.
  * The range per loudness value is the mean in the window against the peak loudness in this window.
- * The sub-sampling size is dynamic and changes with the duration of the audio buffer.
  * Note: No windows are discarded, which means even the first frame gets a value,
  * although the analysis window might include multiple frames.
- * @param audio the audio buffer to use as raw audio source
+ * @param frames100ms a list of all 100ms loudness frames
  * @param loudnessWindowSize the window-size in seconds of the loudness values
  */
-export async function getShortTermLoudnessWithRange(audio: AudioBuffer, loudnessWindowSize: number): Promise<LoudnessAndRange[]> {
-    /**
-     * The dynamic analysis frame size is either the same as the window analysis size or smaller,
-     * if the duration is relatively short.
-     * Then it is tuned to roughly equal 1000 frames for analysis.
-     */
-    const dynamicFrameSizeS = audio.duration / 1000;
-    const frameSizeS = Math.min(loudnessWindowSize / 10, dynamicFrameSizeS);
+export async function getShortTermLoudnessWithRange(frames100ms: PowerOfFrame[], loudnessWindowSize: number): Promise<LoudnessAndRange[]> {
+    // note that 0.1 is the frame size in seconds, which is always 100ms (see parameter `frames100ms`)
+    const loudnessWindowSizeNum = Math.ceil(loudnessWindowSize / 0.1);
+    const frames = frames100msToLoudness(frames100ms, loudnessWindowSize);
 
-    /** the actual loudness analysis window size in number of frames */
-    const loudnessWindowSizeNum = Math.ceil(loudnessWindowSize / frameSizeS);
-
-    const frames = await loudnessOfAudioBuffer(audio, frameSizeS, frameSizeS, () => 1);
+    // optimization: try to only analyze ~1000 windows (i.e. do not create a loudness range value for each frame that is available, but for around 1000 frames)
+    const NUMBER_OF_ANALYSIS_WINDOWS = 1000;
+    const iterationSteps = Math.max(1, Math.round(frames.length / NUMBER_OF_ANALYSIS_WINDOWS));
 
     let windows = [];
 
-    for (let i = 0; i < frames.length; i++) {
+    for (let i = 0; i < frames.length; i += iterationSteps) {
         // use a start and end index that are before i
         const start = Math.max(0, i - loudnessWindowSizeNum);
         const frameSlice = frames.slice(start, i);
@@ -167,77 +156,13 @@ function loudnessOfWindow(window: number[]): number {
     return tmpSum / window.length;
 }
 
-/**
- * Creates a list with frames of 100ms width of the raw audio data. No overlap is used for the loudness values.
- * Suitable for further processing of integrated loudness; the returned values are not gated.
- * @param audio the audio buffer to use as raw audio source
- */
-async function framesOf100ms(audio: AudioBuffer): Promise<number[]> {
-    // create 100ms blocks with loudness values by using the same values
-    const FRAME_SIZE_S = 0.1;
-    const ANALYSIS_WINDOW_SIZE_S = FRAME_SIZE_S;
-    // use a weighting of 1 for each channel
-    const weighting = () => 1;
+function frames100msToLoudness(frames100ms: PowerOfFrame[], analysisWindowSizeS: number): number[] {
+    /**
+     * The list with all combined frame data per window.
+     * The first index is the window and the second the index of the frame within the window.
+     */
+    const analysisWindows = combineValuesIntoAnalysisWindows(frames100ms, 0.1, analysisWindowSizeS);
 
-    return loudnessOfAudioBuffer(audio, FRAME_SIZE_S, ANALYSIS_WINDOW_SIZE_S, weighting);
-}
-
-/**
- * Calculates a list of loudness values with a specified frame size (each value in the returned list is
- * apart from the next value by this size) and analysis window (each value in a frame was calculated by
- * using the values of the analysis-window size before it)
- * @param audio the audio data to use
- * @param frameSizeS the size of the frames that are returned in seconds
- * @param analysisWindowSizeS the window size of the analyzed values in seconds
- * @param weighting the channel weighting used in the calculation
- */
-async function loudnessOfAudioBuffer(audio: AudioBuffer, frameSizeS: number, analysisWindowSizeS: number, weighting: (channel: number) => number): Promise<number[]> {
-    // first convert the audio buffer into frames, to calculate values for each frame
-    const frames = audioBufferIntoFrames(audio, frameSizeS, weighting);
-
-    const input: LoudnessOfAudioBufferWorkerInput = {
-        frames,
-        frameSizeS,
-        analysisWindowSizeS,
-    };
-    const result = await runSingleWorker<LoudnessOfAudioBufferWorkerInput, number[]>(input, new URL("../workers/loudness.worker.ts", import.meta.url));
-    return result;
-}
-
-/**
- * Convert an audio buffer into a list of frames by slicing the underlying audio data.
- * @param audioBuffer the audio buffer which holds the PCM data
- * @param frameSizeS the length of one frame in seconds (the last frame might be shorter)
- * @param weighting a function for generating weights per channel (cached for each frame)
- * @returns a list of frames
- */
-function audioBufferIntoFrames(audioBuffer: AudioBuffer, frameSizeS: number, weighting: (channel: number) => number): Frame[] {
-    /** the number of samples per frame */
-    const frameSizeNumSamples = frameSizeS * audioBuffer.sampleRate;
-    /** the weights per channel */
-    let weights = [];
-    for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-        weights.push(weighting(channel));
-    }
-
-    // transform multiple audio data tracks (i.e. multiple channels) into frames
-    let frames = [];
-    let index = 0;
-    const numberOfSamplesInTotal = audioBuffer.getChannelData(0).length;
-    do {
-        let data = [];
-        for (let channel = 0; channel < audioBuffer.numberOfChannels; channel++) {
-            const audioDataOfChannel = audioBuffer.getChannelData(channel);
-            const frameSection = audioDataOfChannel.slice(index, index + frameSizeNumSamples);
-            data.push(frameSection);
-        }
-        frames.push({
-            data,
-            weights,
-        });
-
-        index += frameSizeNumSamples;
-    } while (index < numberOfSamplesInTotal)
-
-    return frames;
+    /** a list of loudness values per analysis window */
+    return analysisWindows.map(loudnessOfAnalysisWindow);
 }
