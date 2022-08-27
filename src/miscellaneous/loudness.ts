@@ -1,4 +1,5 @@
 import { LoudnessAndRange } from "../components/loudness-graph-canvas";
+import { yieldBackToMainThread } from "./concurrent-processing";
 import { combineValuesIntoAnalysisWindows, do10log10, loudnessOfAnalysisWindow, PowerOfFrame, undo10log10 } from "./loudness-calculations";
 
 /**
@@ -42,7 +43,7 @@ export async function getLoudnessRange(frames100ms: PowerOfFrame[]): Promise<num
  * @param frames100ms a list of all 100ms loudness frames
  */
 export async function getIntegratedLoudness(frames100ms: PowerOfFrame[]): Promise<number> {
-    const frames = frames100msToLoudness(frames100ms, 0.1);
+    const frames = await frames100msToLoudness(frames100ms, 0.1);
 
     // filter the blocks as per ITU-R BS.1770-4 with 75% overlap (3 frames with 100ms frames)
     const numFramesOfOneGatingBlock = 4;
@@ -101,7 +102,7 @@ async function shortTermLoudness(frames100ms: PowerOfFrame[]): Promise<number[]>
 export async function getShortTermLoudnessWithRange(frames100ms: PowerOfFrame[], loudnessWindowSize: number): Promise<LoudnessAndRange[]> {
     // note that 0.1 is the frame size in seconds, which is always 100ms (see parameter `frames100ms`)
     const loudnessWindowSizeNum = Math.ceil(loudnessWindowSize / 0.1);
-    const frames = frames100msToLoudness(frames100ms, loudnessWindowSize);
+    const frames = await frames100msToLoudness(frames100ms, loudnessWindowSize);
 
     // optimization: try to only analyze ~1000 windows (i.e. do not create a loudness range value for each frame that is available, but for around 1000 frames)
     const NUMBER_OF_ANALYSIS_WINDOWS = 1000;
@@ -156,7 +157,7 @@ function loudnessOfWindow(window: number[]): number {
     return tmpSum / window.length;
 }
 
-function frames100msToLoudness(frames100ms: PowerOfFrame[], analysisWindowSizeS: number): number[] {
+async function frames100msToLoudness(frames100ms: PowerOfFrame[], analysisWindowSizeS: number): Promise<number[]> {
     /**
      * The list with all combined frame data per window.
      * The first index is the window and the second the index of the frame within the window.
@@ -164,5 +165,12 @@ function frames100msToLoudness(frames100ms: PowerOfFrame[], analysisWindowSizeS:
     const analysisWindows = combineValuesIntoAnalysisWindows(frames100ms, 0.1, analysisWindowSizeS);
 
     /** a list of loudness values per analysis window */
-    return analysisWindows.map(loudnessOfAnalysisWindow);
+    let loudnessMapped: number[] = [];
+    for (const window of analysisWindows) {
+        const loudness = await loudnessOfAnalysisWindow(window);
+        loudnessMapped.push(loudness);
+        // take a break: yield back to the main thread via setTimeout
+        await yieldBackToMainThread();
+    }
+    return loudnessMapped;
 }
