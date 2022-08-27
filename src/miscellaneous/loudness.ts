@@ -5,10 +5,14 @@ import { combineValuesIntoAnalysisWindows, do10log10, loudnessOfAnalysisWindow, 
 /**
  * Analyzes the given audio data and calculates the loudness-range based on the algorithm presented in EBU Tech 3342.
  * Note: This function is not equal to the presented MatLab-Function "LoudnessRange". Instead it uses raw audio data.
- * @param frames100ms a list of all 100ms loudness frames
+ * @param frames is a generator of all 100ms loudness frames
  */
-export async function getLoudnessRange(frames100ms: PowerOfFrame[]): Promise<number> {
-    const shortLoudness = await shortTermLoudness(frames100ms);
+export async function getLoudnessRange(frames: AsyncGenerator<PowerOfFrame, void, void>): Promise<number> {
+    // shortLoudness converts an async generator into a normal list
+    let shortLoudness = [];
+    for await (const frame of await shortTermLoudness(frames)) {
+        shortLoudness.push(frame);
+    }
 
     const ABS_THRESHOLD = -70; // LUFS (= absolute measure)
     const REL_THRESHOLD = -20; // LU   (= relative measure)
@@ -40,19 +44,23 @@ export async function getLoudnessRange(frames100ms: PowerOfFrame[]): Promise<num
 
 /**
  * Analyzes the given audio data and calculates the integrated loudness as per ITU-R BS.1770-4.
- * @param frames100ms a list of all 100ms loudness frames
+ * @param frames is a generator of all 100ms loudness frames
  */
-export async function getIntegratedLoudness(frames100ms: PowerOfFrame[]): Promise<number> {
-    const frames = await frames100msToLoudness(frames100ms, 0.1);
+export async function getIntegratedLoudness(frames: AsyncGenerator<PowerOfFrame, void, void>): Promise<number> {
+    // framesList converts the async generator into a normal list
+    let framesList = [];
+    for await (const frame of await frames100msToLoudness(frames, 0.1)) {
+        framesList.push(frame);
+    }
 
     // filter the blocks as per ITU-R BS.1770-4 with 75% overlap (3 frames with 100ms frames)
     const numFramesOfOneGatingBlock = 4;
     const step = 1; // step is 1: 75% overlap with 100ms blocks and a target of 400ms gating block size
     let loudness = [];
-    for (let i = 0; i < frames.length - numFramesOfOneGatingBlock; i += step) {
+    for (let i = 0; i < framesList.length - numFramesOfOneGatingBlock; i += step) {
         let sum = 0;
         for (let j = 0; j < numFramesOfOneGatingBlock; j++) {
-            sum += frames[i + j];
+            sum += framesList[i + j];
         }
         const mean = sum / numFramesOfOneGatingBlock;
         loudness.push(mean);
@@ -82,13 +90,13 @@ export async function getIntegratedLoudness(frames100ms: PowerOfFrame[]): Promis
 
 /**
  * Creates a list of short-term loudness values (3s window) of the raw audio data.
- * @param audio the audio buffer to use as raw audio source
+ * @param frames is a generator of all 100ms loudness frames
  */
-async function shortTermLoudness(frames100ms: PowerOfFrame[]): Promise<number[]> {
+async function shortTermLoudness(frames: AsyncGenerator<PowerOfFrame, void, void>): Promise<AsyncGenerator<number, void, void>> {
     // the length of the window in seconds to be used for calculating the short term loudness
     const ANALYSIS_WINDOW_SIZE_S = 3;
 
-    return frames100msToLoudness(frames100ms, ANALYSIS_WINDOW_SIZE_S);
+    return frames100msToLoudness(frames, ANALYSIS_WINDOW_SIZE_S);
 }
 
 /**
@@ -96,24 +104,29 @@ async function shortTermLoudness(frames100ms: PowerOfFrame[]): Promise<number[]>
  * The range per loudness value is the mean in the window against the peak loudness in this window.
  * Note: No windows are discarded, which means even the first frame gets a value,
  * although the analysis window might include multiple frames.
- * @param frames100ms a list of all 100ms loudness frames
+ * @param frames is a generator of all 100ms loudness frames
  * @param loudnessWindowSize the window-size in seconds of the loudness values
  */
-export async function getShortTermLoudnessWithRange(frames100ms: PowerOfFrame[], loudnessWindowSize: number): Promise<LoudnessAndRange[]> {
+export async function getShortTermLoudnessWithRange(frames: AsyncGenerator<PowerOfFrame, void, void>, loudnessWindowSize: number): Promise<LoudnessAndRange[]> {
     // note that 0.1 is the frame size in seconds, which is always 100ms (see parameter `frames100ms`)
     const loudnessWindowSizeNum = Math.ceil(loudnessWindowSize / 0.1);
-    const frames = await frames100msToLoudness(frames100ms, loudnessWindowSize);
+
+    // framesList converts the async generator into a normal list
+    let framesList = [];
+    for await (const frame of await frames100msToLoudness(frames, loudnessWindowSize)) {
+        framesList.push(frame);
+    }
 
     // optimization: try to only analyze ~1000 windows (i.e. do not create a loudness range value for each frame that is available, but for around 1000 frames)
     const NUMBER_OF_ANALYSIS_WINDOWS = 1000;
-    const iterationSteps = Math.max(1, Math.round(frames.length / NUMBER_OF_ANALYSIS_WINDOWS));
+    const iterationSteps = Math.max(1, Math.round(framesList.length / NUMBER_OF_ANALYSIS_WINDOWS));
 
     let windows = [];
 
-    for (let i = 0; i < frames.length; i += iterationSteps) {
+    for (let i = 0; i < framesList.length; i += iterationSteps) {
         // use a start and end index that are before i
         const start = Math.max(0, i - loudnessWindowSizeNum);
-        const frameSlice = frames.slice(start, i);
+        const frameSlice = framesList.slice(start, i);
 
         const range = loudnessRangeOfWindow(frameSlice);
 
@@ -157,20 +170,16 @@ function loudnessOfWindow(window: number[]): number {
     return tmpSum / window.length;
 }
 
-async function frames100msToLoudness(frames100ms: PowerOfFrame[], analysisWindowSizeS: number): Promise<number[]> {
+async function* frames100msToLoudness(frames: AsyncGenerator<PowerOfFrame, void, void>, analysisWindowSizeS: number): AsyncGenerator<number, void, void> {
     /**
      * The list with all combined frame data per window.
      * The first index is the window and the second the index of the frame within the window.
      */
-    const analysisWindows = combineValuesIntoAnalysisWindows(frames100ms, 0.1, analysisWindowSizeS);
+    const analysisWindows = await combineValuesIntoAnalysisWindows(frames, 0.1, analysisWindowSizeS);
 
-    /** a list of loudness values per analysis window */
-    let loudnessMapped: number[] = [];
-    for (const window of analysisWindows) {
-        const loudness = await loudnessOfAnalysisWindow(window);
-        loudnessMapped.push(loudness);
+    for await (const window of analysisWindows) {
+        yield await loudnessOfAnalysisWindow(window);
         // take a break: yield back to the main thread via setTimeout
         await yieldBackToMainThread();
     }
-    return loudnessMapped;
 }

@@ -1,4 +1,5 @@
 import connectAudioEBUR128Prefilter from "../player/audio-ebur128-prefilter";
+import { yieldBackToMainThread } from "./concurrent-processing";
 import { PowerOfFrame } from "./loudness-calculations";
 
 /**
@@ -8,7 +9,7 @@ import { PowerOfFrame } from "./loudness-calculations";
  * @param data the raw binary audio file
  * @returns a list of all 100ms loudness frames
  */
-export async function getLoudnessInformationOfFile(data: Blob): Promise<PowerOfFrame[]> {
+export async function* getLoudnessInformationOfFile(data: Blob): AsyncGenerator<PowerOfFrame, void, void> {
     // use decodeAudioCtx only for decoding the audio data
     const decodeAudioCtx = new OfflineAudioContext(1, 1024, 44100);
     const buffer = await decodeAudioCtx.decodeAudioData(await data.arrayBuffer());
@@ -27,12 +28,18 @@ export async function getLoudnessInformationOfFile(data: Blob): Promise<PowerOfF
     const loudnessFrame100msProcessor = new AudioWorkletNode(offlineAudio, 'loudness-frame-100ms-processor');
     loudnessFrame100msProcessor.connect(offlineAudio.destination);
 
+    // a notification promises for checking when loudness frames are available
+    let notificationPromises: Promise<void>[] = [];
+
     // hook up a receiver function for the loudness frames
     let frames: PowerOfFrame[] = [];
     loudnessFrame100msProcessor.port.onmessage = (ev) => {
-        // parse the message as LoudnessMessage via lose coupling in the processor that emits the events
-        let event: PowerOfFrame = (ev.data as any);
-        frames.push(event);
+        notificationPromises.push(new Promise(resolve => {
+            // parse the message as LoudnessMessage via lose coupling in the processor that emits the events
+            let event: PowerOfFrame = (ev.data as any);
+            frames.push(event);
+            resolve();
+        }));
     };
 
     // pre-filter the data
@@ -40,7 +47,22 @@ export async function getLoudnessInformationOfFile(data: Blob): Promise<PowerOfF
 
     // let the filter run and use the result to calculate values
     bufferSource.start();
-    await offlineAudio.startRendering();
+    // note that this is not awaited to continue execution beyond calling startRendering
+    let finished = false;
+    offlineAudio.startRendering().then(() => finished = true);
 
-    return frames;
+    while (!finished) {
+        // yielding to main thread as not to block it while constantly waiting for promises
+        await yieldBackToMainThread();
+
+        // wait for all notification promises to resolve
+        await Promise.all(notificationPromises);
+
+        // yield all available frames
+        let frame = frames.shift();
+        while (frame !== undefined) {
+            yield frame;
+            frame = frames.shift();
+        }
+    }
 }

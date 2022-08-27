@@ -58,18 +58,40 @@ export function powersPerChannelOfFrame(frame: Frame): PowerOfFrame {
  * @param analysisWindowSizeS the size of one window in seconds (should be greater than frame size)
  * @returns a list of lists where the first index is the analysis window and the second is the index of the value within this window
  */
-export function combineValuesIntoAnalysisWindows<T>(frames: T[], frameSizeS: number, analysisWindowSizeS: number): T[][] {
+export async function* combineValuesIntoAnalysisWindows<T>(frames: AsyncGenerator<T, void, void>, frameSizeS: number, analysisWindowSizeS: number): AsyncGenerator<T[], void, void> {
     console.assert(analysisWindowSizeS >= frameSizeS);
-    /** the list of all windows; has the same length as the input parameter `frames` */
-    let allWindows = [];
-    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
-        /** the number of frames per window */
-        const numFrames = Math.round(analysisWindowSizeS / frameSizeS);
-        /** a list where all items for one window are stored */
-        const windowItems = frames.slice(frameIndex, frameIndex + numFrames);
-        allWindows.push(windowItems);
+
+    /** the number of frames per window */
+    const numFrames = Math.round(analysisWindowSizeS / frameSizeS);
+
+    /**
+     * A bucket for storing all windowItems for one window.
+     * Note that this behaves like a ring buffer: it is at maximum `numFrames` big and when an item is added,
+     * the oldest might be dropped.
+     */
+    class WindowItemsBucket {
+        private buffer: T[] = [];
+        readonly maxNumberItems;
+        constructor(maxNumberItems: number) {
+            this.maxNumberItems = maxNumberItems;
+        }
+        getList(): T[] {
+            // note: return a (shallow) copy of the backing buffer
+            return [...this.buffer];
+        }
+        push(pushData: T) {
+            this.buffer.push(pushData);
+            while (this.buffer.length > this.maxNumberItems) {
+                this.buffer.shift();
+            }
+        }
+    };
+    let windowItemsBucket = new WindowItemsBucket(numFrames);
+
+    for await (const frame of frames) {
+        windowItemsBucket.push(frame);
+        yield windowItemsBucket.getList();
     }
-    return allWindows;
 }
 
 /**
