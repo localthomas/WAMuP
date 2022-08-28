@@ -1,18 +1,51 @@
+/** Defines an array of powers per audio channel. The first index is the channel. */
+export type PowersOfWindow = number[][];
+
 export class ProcessingBuffer {
     private frameSamples: number;
     private numFrames: number;
     private rawBuffer: Float32RingBuffer[] = [];
-    //the calculated power values for each frame and each channel
-    private powerResults: number[][] = [];
-    private onPowerCallback: (powers: number[][]) => void;
+    /** the calculated power values for each frame and each channel */
+    private powerResults: PowersOfWindow = [];
+    private onPowerCallback: (powers: PowersOfWindow) => void;
+    private initCalled = false;
+    /** power data for a callback invocation in the future */
+    private powerResultsForCallback: PowersOfWindow[] = [];
 
-    constructor(sampleRate: number, frameSizeS: number, numFrames: number, onPowerCallback: (powers: number[][]) => void) {
+    /**
+     * Creates a new ProcessingBuffer.
+     * @param sampleRate the sample rate of the audio data in Hz
+     * @param frameSizeS the frame size to use in seconds
+     * @param numFrames the number of frames inside one window of analysis
+     * @param onPowerCallback the callback is called as soon as sufficient power data is available for all channels; see `PowersOfWindow` as a reference
+     */
+    constructor(sampleRate: number, frameSizeS: number, numFrames: number, onPowerCallback: (powers: PowersOfWindow) => void) {
         this.frameSamples = sampleRate * frameSizeS;
         this.numFrames = numFrames;
         this.onPowerCallback = onPowerCallback;
     }
 
+    /**
+     * As the number of channels can only be determined when the first audio data arrives,
+     * this functions is meant to be called once when the first audio data was appended.
+     * @param numberOfChannels the number of channels of the first audio data
+     */
+    private init(numberOfChannels: number) {
+        if (!this.initCalled) {
+            // init the internal state of power results and number of channels
+            for (let channelId = 0; channelId < numberOfChannels; channelId++) {
+                this.powerResults[channelId] = [];
+            }
+        }
+        this.initCalled = true;
+    }
+
+    /**
+     * Processed a given set of audio data by appending it to the internal ring buffers.
+     * @param inputs the raw audio data as PCM float arrays
+     */
     appendData(inputs: Float32Array[]) {
+        this.init(inputs.length);
         inputs.forEach((inputData, channelInd) => {
             if (!this.rawBuffer[channelInd]) {
                 this.rawBuffer[channelInd] = new Float32RingBuffer(this.frameSamples, data => {
@@ -24,17 +57,38 @@ export class ProcessingBuffer {
     }
 
     private appendPower(channel: number, power: number) {
-        if (!this.powerResults[channel]) {
-            this.powerResults[channel] = [];
-        }
-
         this.powerResults[channel].unshift(power);
 
         if (this.powerResults[channel].length >= this.numFrames) {
             this.powerResults[channel] = this.powerResults[channel].slice(0, this.numFrames);
         }
 
-        this.onPowerCallback(this.powerResults);
+        // add the new power values to the callback data buffer
+        // to do this, either find the first slot which does not already contain data for this channel
+        // or create a new slot with this data
+        const indexToAddTo = this.powerResultsForCallback.findIndex((powersOfWindow) => powersOfWindow[channel] === undefined);
+        if (indexToAddTo < 0) {
+            // there is no slot available where no data for this channel is set
+            // create a new slot for this channel
+            let slot: PowersOfWindow = [];
+            // note: a copy of the array is required, so that is not changed in-place afterwards
+            slot[channel] = [...this.powerResults[channel]];
+            this.powerResultsForCallback.push(slot);
+        } else {
+            this.powerResultsForCallback[indexToAddTo][channel] = this.powerResults[channel];
+        }
+
+        // Note: only trigger the callback, if there is at least one slot with data for all channels available
+        while (this.powerResultsForCallback.length > 0 &&
+            this.powerResultsForCallback[0].length == this.powerResults.length &&
+            !this.powerResultsForCallback[0].includes(undefined as any)) {
+            const callbackData = this.powerResultsForCallback.shift();
+            if (callbackData) {
+                this.onPowerCallback(callbackData);
+            } else {
+                throw "unreachable statement";
+            }
+        }
     }
 }
 
