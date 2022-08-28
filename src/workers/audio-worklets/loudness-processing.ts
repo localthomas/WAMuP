@@ -9,8 +9,6 @@ export class ProcessingBuffer {
     private powerResults: PowersOfWindow = [];
     private onPowerCallback: (powers: PowersOfWindow) => void;
     private initCalled = false;
-    /** power data for a callback invocation in the future */
-    private powerResultsForCallback: PowersOfWindow[] = [];
 
     /**
      * Creates a new ProcessingBuffer.
@@ -46,48 +44,35 @@ export class ProcessingBuffer {
      */
     appendData(inputs: Float32Array[]) {
         this.init(inputs.length);
+
+        let powers = Array(inputs.length);
+
         inputs.forEach((inputData, channelInd) => {
             if (!this.rawBuffer[channelInd]) {
-                this.rawBuffer[channelInd] = new Float32RingBuffer(this.frameSamples, data => {
-                    this.appendPower(channelInd, powerOfFrame(data));
-                });
+                this.rawBuffer[channelInd] = new Float32RingBuffer(this.frameSamples);
             }
-            this.rawBuffer[channelInd].push(inputData);
+            const evictedData = this.rawBuffer[channelInd].push(inputData);
+            const powersOfChannel = evictedData.map(data => powerOfFrame(data));
+            powers[channelInd] = powersOfChannel;
         })
-    }
 
-    private appendPower(channel: number, power: number) {
-        this.powerResults[channel].unshift(power);
-
-        if (this.powerResults[channel].length >= this.numFrames) {
-            this.powerResults[channel] = this.powerResults[channel].slice(0, this.numFrames);
+        // assume that each channel has the same amount of power values
+        for (const powersOfChannel of powers) {
+            console.assert(powersOfChannel.length === powers[0].length);
         }
 
-        // add the new power values to the callback data buffer
-        // to do this, either find the first slot which does not already contain data for this channel
-        // or create a new slot with this data
-        const indexToAddTo = this.powerResultsForCallback.findIndex((powersOfWindow) => powersOfWindow[channel] === undefined);
-        if (indexToAddTo < 0) {
-            // there is no slot available where no data for this channel is set
-            // create a new slot for this channel
-            let slot: PowersOfWindow = [];
-            // note: a copy of the array is required, so that is not changed in-place afterwards
-            slot[channel] = [...this.powerResults[channel]];
-            this.powerResultsForCallback.push(slot);
-        } else {
-            this.powerResultsForCallback[indexToAddTo][channel] = this.powerResults[channel];
-        }
+        // a frame is a value of power (i.e. one number) per channel
+        for (let frame = 0; frame < powers[0].length; frame++) {
+            for (let channel = 0; channel < powers.length; channel++) {
+                const power = powers[channel][frame];
+                this.powerResults[channel].unshift(power);
 
-        // Note: only trigger the callback, if there is at least one slot with data for all channels available
-        while (this.powerResultsForCallback.length > 0 &&
-            this.powerResultsForCallback[0].length == this.powerResults.length &&
-            !this.powerResultsForCallback[0].includes(undefined as any)) {
-            const callbackData = this.powerResultsForCallback.shift();
-            if (callbackData) {
-                this.onPowerCallback(callbackData);
-            } else {
-                throw "unreachable statement";
+                if (this.powerResults[channel].length >= this.numFrames) {
+                    this.powerResults[channel] = this.powerResults[channel].slice(0, this.numFrames);
+                }
             }
+            // the callback is invoked on each frame
+            this.onPowerCallback(this.powerResults);
         }
     }
 }
@@ -95,22 +80,27 @@ export class ProcessingBuffer {
 class Float32RingBuffer {
     private buffer: Float32Array;
     private workingIndex: number = 0;
-    private callback: (data: Float32Array) => void;
 
-    constructor(length: number, onFull: (data: Float32Array) => void) {
+    constructor(length: number) {
         this.buffer = new Float32Array(length);
-        this.callback = onFull;
     }
 
-    push(pushData: Float32Array) {
+    /**
+     * Push data into the ring buffer and return potentially evicted data.
+     * @param pushData the data to push into the ring buffer
+     * @returns a list with the evicted values; the `Float32Array` has always the length of the ring buffer; the list might be empty, if no values were evicted
+     */
+    push(pushData: Float32Array): Float32Array[] {
+        let finishedBuffers = [];
         for (const value of pushData) {
             if (this.workingIndex >= this.buffer.length) {
-                this.callback(this.buffer.slice());
+                finishedBuffers.push(this.buffer.slice());
                 this.workingIndex = 0;
             }
             this.buffer[this.workingIndex] = value;
             this.workingIndex++;
         }
+        return finishedBuffers;
     }
 }
 
