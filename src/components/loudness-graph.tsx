@@ -1,6 +1,7 @@
 import { Accessor, createEffect, createMemo, createResource, createSignal } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import { getLoudnessInformationOfFile } from "../miscellaneous/audio";
+import { AsyncArray, asyncGeneratorToArray } from "../miscellaneous/concurrent-processing";
 import { getIntegratedLoudness, getLoudnessRange, getShortTermLoudnessWithRange } from "../miscellaneous/loudness";
 import { AudioPlayerState } from "../player/audio-player";
 import LoadingSpinnerSmall from "./loading-spinner-small";
@@ -21,7 +22,8 @@ export default function LoudnessGraph(props: {
     const [audioBufferForCurrentAsset] = createResource(currentAsset, async (newAsset: string) => {
         const asset = props.backend.get(newAsset);
         if (asset) {
-            return await getLoudnessInformationOfFile(asset.file);
+            const generator = await getLoudnessInformationOfFile(asset.file);
+            return new AsyncArray(generator);
         }
     });
 
@@ -63,7 +65,8 @@ export default function LoudnessGraph(props: {
             const audioBuffer = audioBufferForCurrentAsset();
             if (audioBuffer) {
                 setShortTermLoudnessMap("loading");
-                setShortTermLoudnessMap(await getShortTermLoudnessWithRange(audioBuffer, shortTermLoudnessMapWindowSizeTarget()));
+                const generator = await getShortTermLoudnessWithRange(audioBuffer, shortTermLoudnessMapWindowSizeTarget());
+                asyncGeneratorToArray(generator, { loudness: Number.NEGATIVE_INFINITY, range: 0 }, setShortTermLoudnessMap);
             } else {
                 setShortTermLoudnessMap([]);
             }

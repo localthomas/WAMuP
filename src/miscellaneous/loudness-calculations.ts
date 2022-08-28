@@ -1,6 +1,9 @@
 // Note that this module does not import anything that might use import.meta.
 // This means it is safe to import in WebWorkers.
 
+import { AsyncArray } from "./concurrent-processing";
+import { RingBuffer } from "./ring-buffer";
+
 /** A type as input for a worker calculating the loudness of an array of frames. */
 export type LoudnessOfAudioBufferWorkerInput = {
     frames: Frame[];
@@ -58,37 +61,15 @@ export function powersPerChannelOfFrame(frame: Frame): PowerOfFrame {
  * @param analysisWindowSizeS the size of one window in seconds (should be greater than frame size)
  * @returns a list of lists where the first index is the analysis window and the second is the index of the value within this window
  */
-export async function* combineValuesIntoAnalysisWindows<T>(frames: AsyncGenerator<T, void, void>, frameSizeS: number, analysisWindowSizeS: number): AsyncGenerator<T[], void, void> {
+export async function* combineValuesIntoAnalysisWindows(frames: AsyncArray<PowerOfFrame>, frameSizeS: number, analysisWindowSizeS: number): AsyncGenerator<PowerOfFrame[], void, void> {
     console.assert(analysisWindowSizeS >= frameSizeS);
 
     /** the number of frames per window */
     const numFrames = Math.round(analysisWindowSizeS / frameSizeS);
 
-    /**
-     * A bucket for storing all windowItems for one window.
-     * Note that this behaves like a ring buffer: it is at maximum `numFrames` big and when an item is added,
-     * the oldest might be dropped.
-     */
-    class WindowItemsBucket {
-        private buffer: T[] = [];
-        readonly maxNumberItems;
-        constructor(maxNumberItems: number) {
-            this.maxNumberItems = maxNumberItems;
-        }
-        getList(): T[] {
-            // note: return a (shallow) copy of the backing buffer
-            return [...this.buffer];
-        }
-        push(pushData: T) {
-            this.buffer.push(pushData);
-            while (this.buffer.length > this.maxNumberItems) {
-                this.buffer.shift();
-            }
-        }
-    };
-    let windowItemsBucket = new WindowItemsBucket(numFrames);
+    let windowItemsBucket = new RingBuffer<PowerOfFrame>(numFrames);
 
-    for await (const frame of frames) {
+    for await (const frame of frames.iter()) {
         windowItemsBucket.push(frame);
         yield windowItemsBucket.getList();
     }

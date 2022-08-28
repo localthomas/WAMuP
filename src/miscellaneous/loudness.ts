@@ -1,13 +1,14 @@
 import { LoudnessAndRange } from "../components/loudness-graph-canvas";
-import { yieldBackToMainThread } from "./concurrent-processing";
+import { AsyncArray, AsyncGeneratorFixedLength, yieldBackToMainThread } from "./concurrent-processing";
 import { combineValuesIntoAnalysisWindows, do10log10, loudnessOfAnalysisWindow, PowerOfFrame, undo10log10 } from "./loudness-calculations";
+import { RingBuffer } from "./ring-buffer";
 
 /**
  * Analyzes the given audio data and calculates the loudness-range based on the algorithm presented in EBU Tech 3342.
  * Note: This function is not equal to the presented MatLab-Function "LoudnessRange". Instead it uses raw audio data.
  * @param frames is a generator of all 100ms loudness frames
  */
-export async function getLoudnessRange(frames: AsyncGenerator<PowerOfFrame, void, void>): Promise<number> {
+export async function getLoudnessRange(frames: AsyncArray<PowerOfFrame>): Promise<number> {
     // shortLoudness converts an async generator into a normal list
     let shortLoudness = [];
     for await (const frame of await shortTermLoudness(frames)) {
@@ -46,7 +47,7 @@ export async function getLoudnessRange(frames: AsyncGenerator<PowerOfFrame, void
  * Analyzes the given audio data and calculates the integrated loudness as per ITU-R BS.1770-4.
  * @param frames is a generator of all 100ms loudness frames
  */
-export async function getIntegratedLoudness(frames: AsyncGenerator<PowerOfFrame, void, void>): Promise<number> {
+export async function getIntegratedLoudness(frames: AsyncArray<PowerOfFrame>): Promise<number> {
     // framesList converts the async generator into a normal list
     let framesList = [];
     for await (const frame of await frames100msToLoudness(frames, 0.1)) {
@@ -92,12 +93,17 @@ export async function getIntegratedLoudness(frames: AsyncGenerator<PowerOfFrame,
  * Creates a list of short-term loudness values (3s window) of the raw audio data.
  * @param frames is a generator of all 100ms loudness frames
  */
-async function shortTermLoudness(frames: AsyncGenerator<PowerOfFrame, void, void>): Promise<AsyncGenerator<number, void, void>> {
+async function shortTermLoudness(frames: AsyncArray<PowerOfFrame>): Promise<AsyncGenerator<number, void, void>> {
     // the length of the window in seconds to be used for calculating the short term loudness
     const ANALYSIS_WINDOW_SIZE_S = 3;
 
     return frames100msToLoudness(frames, ANALYSIS_WINDOW_SIZE_S);
 }
+
+/**
+ * An extended async generator with an additional method.
+ */
+export type AsyncLoudnessAndRangeGenerator = AsyncGeneratorFixedLength<LoudnessAndRange, void, unknown>;
 
 /**
  * Creates a list of short-term loudness values of the raw audio data.
@@ -107,37 +113,42 @@ async function shortTermLoudness(frames: AsyncGenerator<PowerOfFrame, void, void
  * @param frames is a generator of all 100ms loudness frames
  * @param loudnessWindowSize the window-size in seconds of the loudness values
  */
-export async function getShortTermLoudnessWithRange(frames: AsyncGenerator<PowerOfFrame, void, void>, loudnessWindowSize: number): Promise<LoudnessAndRange[]> {
+export async function getShortTermLoudnessWithRange(frames: AsyncArray<PowerOfFrame>, loudnessWindowSize: number): Promise<AsyncLoudnessAndRangeGenerator> {
     // note that 0.1 is the frame size in seconds, which is always 100ms (see parameter `frames100ms`)
     const loudnessWindowSizeNum = Math.ceil(loudnessWindowSize / 0.1);
 
-    // framesList converts the async generator into a normal list
-    let framesList = [];
-    for await (const frame of await frames100msToLoudness(frames, loudnessWindowSize)) {
-        framesList.push(frame);
-    }
-
     // optimization: try to only analyze ~1000 windows (i.e. do not create a loudness range value for each frame that is available, but for around 1000 frames)
     const NUMBER_OF_ANALYSIS_WINDOWS = 1000;
-    const iterationSteps = Math.max(1, Math.round(framesList.length / NUMBER_OF_ANALYSIS_WINDOWS));
+    const iterationSteps = Math.max(1, Math.round(frames.getLength() / NUMBER_OF_ANALYSIS_WINDOWS));
 
-    let windows = [];
+    // estimate the number of LoudnessAndRange items that are generated
+    const numberOfLoudnessAndRangeItems = Math.floor(frames.getLength() / iterationSteps);
 
-    for (let i = 0; i < framesList.length; i += iterationSteps) {
-        // use a start and end index that are before i
-        const start = Math.max(0, i - loudnessWindowSizeNum);
-        const frameSlice = framesList.slice(start, i);
+    return {
+        async*[Symbol.asyncIterator]() {
+            let i = 0;
+            let ringBuffer = new RingBuffer<number>(loudnessWindowSizeNum);
+            for await (const frame of await frames100msToLoudness(frames, loudnessWindowSize)) {
+                ringBuffer.push(frame);
+                // simulate an iteration step of more than 1
+                if (i % iterationSteps === 0) {
+                    const frameSlice = ringBuffer.getList();
 
-        const range = loudnessRangeOfWindow(frameSlice);
+                    const range = loudnessRangeOfWindow(frameSlice);
 
-        const loudness = loudnessOfWindow(frameSlice);
-        windows.push({
-            loudness,
-            range
-        });
-    }
-
-    return windows;
+                    const loudness = loudnessOfWindow(frameSlice);
+                    yield {
+                        loudness,
+                        range
+                    };
+                }
+                i++;
+            }
+        },
+        getNumberOfTotalElements() {
+            return numberOfLoudnessAndRangeItems;
+        }
+    };
 }
 
 /**
@@ -170,7 +181,7 @@ function loudnessOfWindow(window: number[]): number {
     return tmpSum / window.length;
 }
 
-async function* frames100msToLoudness(frames: AsyncGenerator<PowerOfFrame, void, void>, analysisWindowSizeS: number): AsyncGenerator<number, void, void> {
+async function* frames100msToLoudness(frames: AsyncArray<PowerOfFrame>, analysisWindowSizeS: number): AsyncGenerator<number, void, void> {
     /**
      * The list with all combined frame data per window.
      * The first index is the window and the second the index of the frame within the window.
