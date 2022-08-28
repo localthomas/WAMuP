@@ -7,10 +7,6 @@ There is no guarantee that issues and pull requests will be answered.
 This project is currently mainly tested on Chromium based browsers, but it should work in other browsers as well.
 Some details in the interface might differ in appearance between different engines.
 
-## Known Issues
-
-When loading a large file (duration > 1h) in the visualization tab, the browser tab might crash after a while with an out of memory error.
-
 ## Development
 
 A nix flake is provided with a simple development environment.
