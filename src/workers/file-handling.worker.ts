@@ -4,8 +4,7 @@ import { getMetadata } from "../backend/metadata";
 import { registerParallelWorkerFunction } from "./parallel-worker-base";
 
 registerParallelWorkerFunction(async function (file: File): Promise<PerFileData> {
-    // read the binary data of the file once, as it is needed for the metadata and hash
-    const fileBlob = new Uint8Array(await file.arrayBuffer());
+    const hash = await getFileHash(file);
 
     let metadata = {
         title: "",
@@ -19,13 +18,10 @@ registerParallelWorkerFunction(async function (file: File): Promise<PerFileData>
         track: { of: 0, no: 0 }
     };
     try {
-        metadata = await getMetadata(fileBlob, file.type, file.name);
+        metadata = await getMetadata(file, file.name);
     } catch (error) {
         console.error(`could not read metadata from ${file.name}: `, error);
     }
-
-    // Note: get hash after metadata, as this function changes the content of the buffer!
-    const hash = await getFileHash(fileBlob);
 
     return {
         hash,

@@ -23,11 +23,11 @@
     "postbuild": "workbox generateSW"
   },
   "devDependencies": {
-    "@parcel/packager-raw-url": "^2.8.3",
-    "@parcel/transformer-webmanifest": "^2.8.3",
-    "@parcel/core": "^2.8.3",
     "@parcel/config-default": "^2.8.3",
+    "@parcel/core": "^2.8.3",
+    "@parcel/packager-raw-url": "^2.8.3",
     "@parcel/reporter-cli": "^2.8.3",
+    "@parcel/transformer-webmanifest": "^2.8.3",
     "@types/node": "^20.2.1",
     "@types/wicg-file-system-access": "^2020.9.6",
     "babel-preset-solid": "^1.7.4",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.8.2",
-    "murmur-32": "^1.0.0",
+    "crc-32": "^1.2.2",
     "music-metadata-browser": "^2.5.10",
     "solid-js": "^1.7.0"
   },
