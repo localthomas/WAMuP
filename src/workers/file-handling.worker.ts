@@ -1,3 +1,4 @@
+import { getMetadataFromCache, setMetadataIntoCache } from "../backend/caching";
 import { PerFileData } from "../backend/file-handling";
 import { getFileHash } from "../backend/file-hashing";
 import { getMetadata } from "../backend/metadata";
@@ -18,7 +19,13 @@ registerParallelWorkerFunction(async function (file: File): Promise<PerFileData>
         track: { of: 0, no: 0 }
     };
     try {
-        metadata = await getMetadata(file, file.name);
+        const possibleMetadata = await getMetadataFromCache(hash);
+        if (possibleMetadata) {
+            metadata = possibleMetadata;
+        } else {
+            metadata = await getMetadata(file, file.name);
+            await setMetadataIntoCache(hash, metadata);
+        }
     } catch (error) {
         console.error(`could not read metadata from ${file.name}: `, error);
     }

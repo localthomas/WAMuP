@@ -1,4 +1,5 @@
 import { Progress, runMultipleWorkers } from "../miscellaneous/parallel";
+import { clearCacheExceptFor } from "./caching";
 import { Metadata } from "./metadata";
 
 export type PerFileData = {
@@ -20,5 +21,9 @@ export async function createPerFileData(files: File[], progressCallback: (progre
     console.timeEnd("file-handling.worker.ts");
 
     console.assert(files.length === results.length, files, results);
+
+    // Note: reset the cache here, as there is now a full list with all hashes
+    await clearCacheExceptFor(results.map((result) => result.hash));
+
     return results;
 }
