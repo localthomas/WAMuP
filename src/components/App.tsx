@@ -1,5 +1,5 @@
 import { Component, createMemo, createResource, createSignal, JSX } from 'solid-js';
-import { Navigate, Routes, Route } from "solid-app-router";
+import { Navigate, Routes, Route } from "@solidjs/router";
 import { BackendState, BackendStore } from '../backend/backend';
 import Default from '../views/default';
 import Navigation from './navigation';
@@ -47,7 +47,7 @@ const App: Component = () => {
         }
     });
 
-    return page;
+    return page();
 };
 
 export default App;
@@ -73,7 +73,7 @@ const LicensesWrapper: Component = () => {
         }
     });
 
-    return page;
+    return page();
 }
 
 /**

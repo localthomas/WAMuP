@@ -1,5 +1,5 @@
 import { Signal } from "solid-js";
-import { Link } from "solid-app-router";
+import { Link } from "@solidjs/router";
 import { BackendState } from "../backend/backend";
 import Overview from "../components/overview";
 import SourceDirectoryPicker from "../components/source-dir-picker";

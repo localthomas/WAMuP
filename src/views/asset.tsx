@@ -1,4 +1,4 @@
-import { useParams } from "solid-app-router";
+import { useParams } from "@solidjs/router";
 import { BackendStore } from "../backend/backend";
 import { AssetDetailed } from "../components/asset-detailed";
 import { PlayBtn, PlusBtn } from "../components/icon-btns";

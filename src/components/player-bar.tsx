@@ -1,4 +1,4 @@
-import { Link } from "solid-app-router";
+import { Link } from "@solidjs/router";
 import { createMemo } from "solid-js";
 import { BackendStore } from "../backend/backend";
 import { Metadata } from "../backend/metadata";

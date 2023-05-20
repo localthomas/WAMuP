@@ -13,7 +13,7 @@ export default function Licenses() {
     const list = Object.entries(data).map(([_name, value]) => {
         return value as PackageDetails;
     });
-    const unknown = () => <i>unknown</i>;
+    const unknown = <i>unknown</i>;
     return (
         <>
             <h1>Third Party Licenses</h1>

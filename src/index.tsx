@@ -1,6 +1,6 @@
 /* @refresh reload */
 import { render } from 'solid-js/web';
-import { hashIntegration, Router } from "solid-app-router";
+import { hashIntegration, Router } from "@solidjs/router";
 
 import './index.css';
 import App from './components/App';

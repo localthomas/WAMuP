@@ -1,4 +1,4 @@
-import { useParams } from "solid-app-router";
+import { useParams } from "@solidjs/router";
 import { BackendStore } from "../backend/backend";
 import { MetadataWithID } from "../backend/metadata";
 import TitleList, { TitleListEvents } from "../components/title-list";

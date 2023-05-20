@@ -1,4 +1,4 @@
-import { useNavigate } from "solid-app-router";
+import { useNavigate } from "@solidjs/router";
 import { createSignal } from "solid-js";
 import { Asset, BackendStore } from "../backend/backend";
 import AlbumCard from "../components/album-card";
@@ -30,7 +30,7 @@ export default function Albums(props: {
             {list.map(album => {
                 const [thumbnailData, setThumbnailData] = createSignal<Blob | undefined>(undefined);
                 getFirstThumbnail(props.backend, album.info.assets).then((thumbnailData) => {
-                    setThumbnailData(thumbnailData);
+                    setThumbnailData(() => thumbnailData);
                 });
 
                 return (

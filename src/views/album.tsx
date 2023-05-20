@@ -1,4 +1,4 @@
-import { useParams } from "solid-app-router";
+import { useParams } from "@solidjs/router";
 import { createResource } from "solid-js";
 import { Asset, BackendStore } from "../backend/backend";
 import { MetadataWithID, sortTracksFunction } from "../backend/metadata";

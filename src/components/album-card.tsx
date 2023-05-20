@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "solid-app-router";
+import { Link, useNavigate } from "@solidjs/router";
 import { Accessor } from "solid-js";
 import { blobToImageSrcWithDefault } from "../miscellaneous/images";
 import { InfoBtn, PlayBtn } from "./icon-btns";
