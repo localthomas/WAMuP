@@ -1,4 +1,4 @@
-import { Component, createMemo, createResource, createSignal, JSX } from 'solid-js';
+import { createMemo, createResource, createSignal, JSX } from 'solid-js';
 import { Navigate, Routes, Route } from "@solidjs/router";
 import { BackendState, BackendStore } from '../backend/backend';
 import Default from '../views/default';
@@ -16,7 +16,7 @@ import { AudioSessionConnectors } from '../player/audio-session-connectors';
 import Licenses from '../views/licenses';
 import LoadingSpinnerSmall from './loading-spinner-small';
 
-const App = () => {
+export default function App() {
     const [backendState, setBackendState] = createSignal<BackendState>({ tag: "None" });
 
     const defaultRoute = <Route path="/" element={<Default backendSignal={[backendState, setBackendState]} />} />;
@@ -47,16 +47,14 @@ const App = () => {
         }
     });
 
-    return page;
+    return (<>{page()}</>);
 };
-
-export default App;
 
 /**
  * Loads a `Licenses` component at runtime, i.e. with code splitting.
  * @returns the licenses component
  */
-const LicensesWrapper = () => {
+function LicensesWrapper() {
     const [component] = createResource(async () => {
         const licensesModule = (
             (await import('../views/licenses')) as unknown
@@ -73,7 +71,7 @@ const LicensesWrapper = () => {
         }
     });
 
-    return page;
+    return (<>{page()}</>);
 }
 
 /**
