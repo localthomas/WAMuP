@@ -16,7 +16,7 @@
     "clean": "rm -rf dist/ && rm -rf .parcel-cache/ && rm -f .env.local && rm -f licenses.json",
     "prerequisites": "npm run clean && npm run licenses && npm run get-commit-hash",
     "predev": "npm run prerequisites",
-    "dev": "parcel",
+    "dev": "node dev.mjs",
     "check": "tsc --noEmit",
     "prebuild": "npm run prerequisites",
     "build": "parcel build --no-cache --log-level info --public-url ./",
@@ -25,6 +25,9 @@
   "devDependencies": {
     "@parcel/packager-raw-url": "^2.8.3",
     "@parcel/transformer-webmanifest": "^2.8.3",
+    "@parcel/core": "^2.8.3",
+    "@parcel/config-default": "^2.8.3",
+    "@parcel/reporter-cli": "^2.8.3",
     "@types/node": "^20.2.1",
     "@types/wicg-file-system-access": "^2020.9.6",
     "babel-preset-solid": "^1.7.4",
