@@ -16,7 +16,7 @@ import { AudioSessionConnectors } from '../player/audio-session-connectors';
 import Licenses from '../views/licenses';
 import LoadingSpinnerSmall from './loading-spinner-small';
 
-const App: Component = () => {
+const App = () => {
     const [backendState, setBackendState] = createSignal<BackendState>({ tag: "None" });
 
     const defaultRoute = <Route path="/" element={<Default backendSignal={[backendState, setBackendState]} />} />;
@@ -47,7 +47,7 @@ const App: Component = () => {
         }
     });
 
-    return page();
+    return page;
 };
 
 export default App;
@@ -56,7 +56,7 @@ export default App;
  * Loads a `Licenses` component at runtime, i.e. with code splitting.
  * @returns the licenses component
  */
-const LicensesWrapper: Component = () => {
+const LicensesWrapper = () => {
     const [component] = createResource(async () => {
         const licensesModule = (
             (await import('../views/licenses')) as unknown
@@ -73,7 +73,7 @@ const LicensesWrapper: Component = () => {
         }
     });
 
-    return page();
+    return page;
 }
 
 /**

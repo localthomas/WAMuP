@@ -98,11 +98,11 @@ export default function LoudnessGraph(props: {
                     <tbody>
                         <tr>
                             <td>Integrated Loudness:&nbsp;</td>
-                            <td>{integratedLoudnessBody()} LUFS</td>
+                            <td>{integratedLoudnessBody} LUFS</td>
                         </tr>
                         <tr>
                             <td>Integrated Loudness Range:&nbsp;</td>
-                            <td>{loudnessRangeBody()} LU</td>
+                            <td>{loudnessRangeBody} LU</td>
                         </tr>
                     </tbody>
                 </table>

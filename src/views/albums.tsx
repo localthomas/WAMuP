@@ -30,7 +30,7 @@ export default function Albums(props: {
             {list.map(album => {
                 const [thumbnailData, setThumbnailData] = createSignal<Blob | undefined>(undefined);
                 getFirstThumbnail(props.backend, album.info.assets).then((thumbnailData) => {
-                    setThumbnailData(() => thumbnailData);
+                    setThumbnailData(thumbnailData);
                 });
 
                 return (
